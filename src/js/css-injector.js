@@ -1,20 +1,20 @@
-class CssInjector {
+const settings = require('electron-settings');
 
-}
+class CssInjector {}
 
 CssInjector.main = `
     /* hide the vertical ad bar */
-    ._1_ag99JsBHxI6S4FP5ayPv {
+    .${settings.get('verticalAdsClass')} {
         display: none !important;
     }
 
     /* hide the small ad bar in other email page */
-    ._2a6h2L3Tl12cnq2P7ZG9y_ {
+    .${settings.get('smallAdsClass')} {
         display: none !important;
     }
 
     /* hide the upgrade premium ad bar */
-    ._1ZEdP0-JdMOVtjBb5ZcM6M {
+    .${settings.get('premiumAdsClass')} {
         display: none !important;
     }
 `

@@ -8,11 +8,35 @@
     <!--    <link href="../css/settings.css" rel="stylesheet">-->
 </head>
 
-<body>
+<body style="height: auto">
     <div class="ui main text container">
-        <p>This is the setting page.</p>
+        <div class="ui horizontal divider">
+            <h2 id="setting-header" class="ui header">Manage your settings</h2>
+        </div>
+
+        <div id="ads-blocker-segment" class="ui piled segment">
+            <h3 id="ads-blocker-title" class="ui header">
+                <div class="content">
+                    Ads Blocker Settings
+                    <div class="sub header">restart the app to apply changes</div>
+                </div>
+            </h3>
+            <div id="ads-blocker-vertical-title" class="ui horizontal divider">Vertical Ads Class</div>
+            <div id="ads-blocker-vertical-class" class="ui fluid input">
+                <input type="text" placeholder="_1_ag99JsBHxI6S4FP5ayPv">
+            </div>
+            <div id="ads-blocker-small-title" class="ui horizontal divider">Small Ads Class</div>
+            <div id="ads-blocker-small-class" class="ui fluid input">
+                <input type="text" placeholder="_2a6h2L3Tl12cnq2P7ZG9y_">
+            </div>
+            <div id="ads-blocker-premium-title" class="ui horizontal divider">Upgrade Premium Ads Class</div>
+            <div id="ads-blocker-premium-class" class="ui fluid input">
+                <input type="text" placeholder="_1ZEdP0-JdMOVtjBb5ZcM6M">
+            </div>
+        </div>
     </div>
 
+    <script>window.$ = window.jQuery = require('../../resources/jquery-3.4.1.min.js');</script>
     <script>
         require('../js/setting.js');
     </script>
