@@ -1,11 +1,11 @@
-const { BrowserWindow, shell, ipcMain } = require('electron')
-const settings = require('electron-settings')
-const CssInjector = require('../js/css-injector')
-const path = require('path')
+const { BrowserWindow, shell, ipcMain } = require('electron');
+const settings = require('electron-settings');
+const CssInjector = require('../js/css-injector');
+const path = require('path');
 
-const outlookUrl = 'https://outlook.live.com/mail'
-const deeplinkUrls = ['outlook.live.com/mail/deeplink', 'outlook.office365.com/mail/deeplink', 'outlook.office.com/mail/deeplink']
-const outlookUrls = ['outlook.live.com', 'outlook.office365.com', 'outlook.office.com']
+const outlookUrl = 'https://outlook.live.com/mail';
+const deeplinkUrls = ['outlook.live.com/mail/deeplink', 'outlook.office365.com/mail/deeplink', 'outlook.office.com/mail/deeplink'];
+const outlookUrls = ['outlook.live.com', 'outlook.office365.com', 'outlook.office.com'];
 
 class MailWindowController {
     constructor() {
@@ -14,7 +14,7 @@ class MailWindowController {
 
     init() {
         // Get configurations.
-        const showWindowFrame = settings.get('showWindowFrame', true)
+        const showWindowFrame = settings.get('showWindowFrame', true);
 
         // Create the browser window.
         this.win = new BrowserWindow({
@@ -26,33 +26,33 @@ class MailWindowController {
             autoHideMenuBar: true,
             show: false,
             icon: path.join(__dirname, '../../assets/outlook_linux_black.png')
-        })
+        });
 
         // and load the index.html of the app.
-        this.win.loadURL(outlookUrl)
+        this.win.loadURL(outlookUrl);
 
         // Show window handler
-        ipcMain.on('show', (event) => {
+        ipcMain.on('show', () => {
             this.show()
-        })
+        });
 
         // insert styles
         this.win.webContents.on('dom-ready', () => {
-            this.win.webContents.insertCSS(CssInjector.main)
-            if (!showWindowFrame) this.win.webContents.insertCSS(CssInjector.noFrame)
+            this.win.webContents.insertCSS(CssInjector.main);
+            if (!showWindowFrame) this.win.webContents.insertCSS(CssInjector.noFrame);
 
-            this.addUnreadNumberObserver()
+            this.addUnreadNumberObserver();
 
             this.win.show()
-        })
+        });
 
         // prevent the app quit, hide the window instead.
         this.win.on('close', (e) => {
             if (this.win.isVisible()) {
-                e.preventDefault()
+                e.preventDefault();
                 this.win.hide()
             }
-        })
+        });
 
         // Emitted when the window is closed.
         this.win.on('closed', () => {
@@ -60,7 +60,7 @@ class MailWindowController {
             // in an array if your app supports multi windows, this is the time
             // when you should delete the corresponding element.
             this.win = null
-        })
+        });
 
         // Open the new window in external browser
         this.win.webContents.on('new-window', this.openInBrowser)
@@ -138,26 +138,26 @@ class MailWindowController {
     }
 
     openInBrowser(e, url) {
-        console.log(url)
+        console.log(url);
         if (new RegExp(deeplinkUrls.join('|')).test(url)) {
             // Default action - if the user wants to open mail in a new window - let them.
         }
         else if (new RegExp(outlookUrls.join('|')).test(url)) {
             // Open calendar, contacts and tasks in the same window
-            e.preventDefault()
+            e.preventDefault();
             this.loadURL(url)
         }
         else {
             // Send everything else to the browser
-            e.preventDefault()
+            e.preventDefault();
             shell.openExternal(url)
         }
     }
 
     show() {
-        this.win.show()
+        this.win.show();
         this.win.focus()
     }
 }
 
-module.exports = MailWindowController
+module.exports = MailWindowController;
