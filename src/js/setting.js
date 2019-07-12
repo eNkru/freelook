@@ -1,6 +1,7 @@
 const settings = require('electron-settings');
 
 $(() => {
+    $('.ui.dropdown').dropdown();
     loadSettings();
 });
 

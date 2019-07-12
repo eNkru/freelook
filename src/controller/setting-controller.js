@@ -10,6 +10,7 @@ class SettingsWindow {
     init() {
         this.window = new BrowserWindow({
             width: 500,
+            height: 700,
             autoHideMenuBar: true,
             show: false,
             webPreferences: {
