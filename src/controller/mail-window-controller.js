@@ -2,6 +2,7 @@ const { BrowserWindow, shell, ipcMain } = require('electron');
 const settings = require('electron-settings');
 const CssInjector = require('../js/css-injector');
 const path = require('path');
+const isOnline = require('is-online');
 
 const homepageUrl = settings.get('homepageUrl', 'https://outlook.live.com/mail');
 const deeplinkUrls = ['outlook.live.com/mail/deeplink', 'outlook.office365.com/mail/deeplink', 'outlook.office.com/mail/deeplink'];
@@ -9,7 +10,8 @@ const outlookUrls = ['outlook.live.com', 'outlook.office365.com', 'outlook.offic
 
 class MailWindowController {
     constructor() {
-        this.init()
+        this.initSplash();
+        setTimeout(() => this.connectToMicrosoft(), 1000);
     }
 
     init() {
@@ -74,7 +76,7 @@ class MailWindowController {
 
                 let observer = new MutationObserver(mutations => {
                     mutations.forEach(mutation => {
-                        console.log('Observer Changed.');
+                        // console.log('Observer Changed.');
                         require('electron').ipcRenderer.send('updateUnread', unreadSpan.hasChildNodes());
 
                         // Scrape messages and pop up a notification
@@ -138,7 +140,7 @@ class MailWindowController {
     }
 
     openInBrowser(e, url) {
-        console.log(url);
+        // console.log(url);
         if (new RegExp(deeplinkUrls.join('|')).test(url)) {
             // Default action - if the user wants to open mail in a new window - let them.
         }
@@ -157,6 +159,34 @@ class MailWindowController {
     show() {
         this.win.show();
         this.win.focus()
+    }
+
+    initSplash() {
+        this.splashWin = new BrowserWindow({
+            width: 300,
+            height: 300,
+            frame: false,
+            autoHideMenuBar: true,
+            webPreferences: {
+                nodeIntegration: true
+            }
+        });
+        this.splashWin.loadURL(`file://${path.join(__dirname, '../view/splash.html')}`);
+
+        ipcMain.on('reconnect', () => {
+            this.connectToMicrosoft();
+        });
+    }
+
+    connectToMicrosoft() {
+        (async () => await isOnline({timeout: 5000}))().then(result => {
+            if (result) {
+                this.init();
+                this.splashWin.destroy();
+            } else {
+                this.splashWin.webContents.send('connect-timeout');
+            }
+        });
     }
 }
 

@@ -27,7 +27,8 @@
     "electron-builder": "^20.44.4"
   },
   "dependencies": {
-    "electron-settings": "^3.2.0"
+    "electron-settings": "^3.2.0",
+    "is-online": "^8.2.0"
   },
   "build": {
     "appId": "nz.co.enkru.${name}",
@@ -42,7 +43,7 @@
       ]
     },
     "win": {
-      "target":"msi"
+      "target": "msi"
     }
   }
 }
