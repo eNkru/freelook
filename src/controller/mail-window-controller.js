@@ -181,7 +181,7 @@ class MailWindowController {
     }
 
     connectToMicrosoft() {
-        (async () => await isOnline({timeout: 5000}))().then(result => {
+        (async () => await isOnline({timeout: 15000}))().then(result => {
             if (result) {
                 this.init();
                 this.splashWin.destroy();
