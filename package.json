@@ -1,7 +1,7 @@
 {
   "name": "electron-outlook",
   "productName": "Freelook",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "discription": "Outlook Electron desktop application",
   "main": "src/main.js",
   "author": "Howard Ju <howard.ju@outlook.com>",
