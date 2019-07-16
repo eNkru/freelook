@@ -7,12 +7,15 @@ Freelook, an Electron-based client for Microsoft Outlook.
 ![screenshot_linux](https://user-images.githubusercontent.com/13460738/35953459-a0875872-0ce9-11e8-9bca-880564b9beee.png)
 
 ## Feature
-* Receive your hotmail / outlook online from the desktop app
+* Receive your hotmail / outlook / office 365 online from the desktop app
 * Close to minimise
 * Dock tray support
 * System notification
+* Customized setting
+    * Ads block as your control
+    * Switch between outlook and office 365
 
-## Pre-Request
+## Build Pre-Request
 * [GIT](https://git-scm.com/)
 * [YARN](https://yarnpkg.com/)
 
@@ -42,4 +45,4 @@ npm publish
 The released application can be downloaded [here](https://github.com/eNkru/electron-outlook/releases).
 
 ## License
-[MIT](https://github.com/eNkru/electron-xiami/blob/master/LICENSE) by [Howard J](https://enkru.github.io/)
+[MIT](https://github.com/eNkru/electron-xiami/blob/master/LICENSE) @ [Howard Ju](https://enkru.github.io/)
