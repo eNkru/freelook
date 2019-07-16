@@ -11,6 +11,7 @@ Freelook, an Electron-based client for Microsoft Outlook.
 * Close to minimise
 * Dock tray support
 * System notification
+* Network connection detection
 * Customized setting
     * Ads block as your control
     * Switch between outlook and office 365
