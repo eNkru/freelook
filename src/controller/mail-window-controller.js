@@ -4,7 +4,8 @@ const CssInjector = require('../js/css-injector');
 const path = require('path');
 const isOnline = require('is-online');
 
-const homepageUrl = settings.get('homepageUrl', 'https://outlook.live.com/mail');
+// Removed setting due to error
+const homepageUrl = 'https://outlook.live.com/mail'
 const deeplinkUrls = ['outlook.live.com/mail/deeplink', 'outlook.office365.com/mail/deeplink', 'outlook.office.com/mail/deeplink'];
 const outlookUrls = ['outlook.live.com', 'outlook.office365.com', 'outlook.office.com'];
 

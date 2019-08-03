@@ -1,14 +1,15 @@
 const { app, Tray, nativeImage, Menu, ipcMain } = require('electron');
 const settings = require('electron-settings');
 const path = require('path');
-const SettingsController = require('./setting-controller');
+//const SettingsController = require('./setting-controller');
 
 const macOS = process.platform === 'darwin';
 
 class TrayController {
     constructor(mailController) {
         this.mailController = mailController;
-        this.settingController = new SettingsController();
+        // Temporarily disabled due to aforementioned error
+        //this.settingController = new SettingsController();
         this.init()
     }
 
