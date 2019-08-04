@@ -1,20 +1,25 @@
 const settings = require('electron-settings');
+const fs = require('fs-extra');
 
-class CssInjector {}
+class CssInjector {
+    constructor() {
+        this.settingsExist = fs.existsSync(`${app.getPath('userData')}/Settings`);
+    }
+}
 
 CssInjector.main = `
     /* hide the vertical ad bar */
-    .${settings.get('verticalAdsClass')} {
+    .${this.settingsExist ? settings.get('verticalAdsClass') : ''} {
         display: none !important;
     }
 
     /* hide the small ad bar in other email page */
-    .${settings.get('smallAdsClass')} {
+    .${this.settingsExist ? settings.get('smallAdsClass') : ''} {
         display: none !important;
     }
 
     /* hide the upgrade premium ad bar */
-    .${settings.get('premiumAdsClass')} {
+    .${this.settingsExist ? settings.get('premiumAdsClass') : ''} {
         display: none !important;
     }
 `

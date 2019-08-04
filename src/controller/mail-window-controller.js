@@ -1,10 +1,12 @@
-const { BrowserWindow, shell, ipcMain } = require('electron');
+const { app, BrowserWindow, shell, ipcMain } = require('electron');
 const settings = require('electron-settings');
 const CssInjector = require('../js/css-injector');
 const path = require('path');
+const fs = require('fs-extra');
 const isOnline = require('is-online');
 
-const homepageUrl = settings.get('homepageUrl', 'https://outlook.live.com/mail');
+const settingsExist = fs.existsSync(`${app.getPath('userData')}/Settings`);
+const homepageUrl = settingsExist ? settings.get('homepageUrl', 'https://outlook.live.com/mail') : 'https://outlook.live.com/mail';
 const deeplinkUrls = ['outlook.live.com/mail/deeplink', 'outlook.office365.com/mail/deeplink', 'outlook.office.com/mail/deeplink'];
 const outlookUrls = ['outlook.live.com', 'outlook.office365.com', 'outlook.office.com'];
 
