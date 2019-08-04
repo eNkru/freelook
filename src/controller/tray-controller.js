@@ -9,7 +9,6 @@ class TrayController {
     constructor(mailController) {
         this.mailController = mailController;
         this.settingController = new SettingsController();
-        this.settingController = new SettingsController();
         this.init()
     }
 
