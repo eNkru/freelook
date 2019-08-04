@@ -1,4 +1,4 @@
-const { Menu } = require('electron')
+const { app, Menu } = require('electron')
 const macOS = process.platform === 'darwin' ? true : false
 
 class MenuController {
@@ -8,6 +8,13 @@ class MenuController {
 
     init() {
         const appMenuTemplate = [{
+            label: "Application",
+            submenu: [
+                { label: "About Application", selector: "orderFrontStandardAboutPanel:" },
+                { type: "separator" },
+                { label: "Quit", accelerator: "Command+Q", click: function () { app.exit(0); } }
+            ]
+        }, {
             label: "Edit",
             submenu: [
                 { label: "Undo", accelerator: "CmdOrCtrl+Z", selector: "undo:" },
