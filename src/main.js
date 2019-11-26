@@ -2,6 +2,9 @@ const { app } = require('electron')
 const MailWindowController = require('./controller/mail-window-controller')
 const TrayController = require('./controller/tray-controller')
 const MenuController = require('./controller/menu-controller')
+app.commandLine.appendSwitch("auth-server-whitelist", "*");
+app.commandLine.appendSwitch("enable-ntlm-v2", "true");
+
 
 class ElectronOutlook {
   constructor() {
