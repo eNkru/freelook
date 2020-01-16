@@ -31,7 +31,7 @@ class MailWindowController {
             show: false,
             icon: path.join(__dirname, '../../assets/outlook_linux_black.png'),
             webPreferences: {
-                nodeIntegration: false,
+                nodeIntegration: true,
                 preload: path.join(__dirname, '../js/preload.js')
             }
         });
@@ -75,9 +75,9 @@ class MailWindowController {
     }
 
     addUnreadNumberObserver() {
-        this.win.webContents.executeJavaScript(`
+        settingsExist && settings.get('unreadMessageClass') && this.win.webContents.executeJavaScript(`
             setTimeout(() => {
-                let unreadSpan = document.querySelector('._2iKri0mE1PM9vmRn--wKyI');
+                let unreadSpan = document.querySelector(".${settings.get('unreadMessageClass')}");
                 require('electron').ipcRenderer.send('updateUnread', unreadSpan.hasChildNodes());
 
                 let observer = new MutationObserver(mutations => {
@@ -101,7 +101,7 @@ class MailWindowController {
                             }
                             if (unread.length)
                             {
-                                var notification = new Notification(unread.length + " New Messages", {
+                                var notification = new Notification("Outlook - receiving " + unread.length + " new messages.", {
                                     body: body,
                                     icon: "assets/outlook_linux_black.png"
                                 });

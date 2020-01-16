@@ -21,6 +21,12 @@ loadSettings = () => {
     $premiumInput.val(premiumClass);
     $premiumInput.change(() => settings.set('premiumAdsClass', $premiumInput.val()));
 
+    // load unread message setting
+    const unreadMsgClass = settings.get('unreadMessageClass');
+    const unreadMsgInput = $('#unread-message-class input');
+    unreadMsgInput.val(unreadMsgClass);
+    unreadMsgInput.change(() => settings.set('unreadMessageClass', unreadMsgInput.val()));
+
     // load home url setting
     const homepageUrl = settings.get('homepageUrl', 'https://outlook.live.com/mail');
     let $homepageUrl = $('#homepageUrl');
