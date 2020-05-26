@@ -16,7 +16,7 @@ class TrayController {
         this.tray = new Tray(this.createTrayIcon(''));
 
         const context = Menu.buildFromTemplate([
-            {label: 'Show Me', click: () => this.showHide()},
+            {label: 'Open', click: () => this.showHide()},
             {label: 'Separator', type: 'separator'},
             // {label: 'Window Frame', type: 'checkbox', checked: settings.get('showWindowFrame', true), click: () => this.toggleWindowFrame()},
             {label: 'Settings', click: () => this.openSettings()},
