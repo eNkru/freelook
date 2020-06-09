@@ -16,7 +16,7 @@
   "scripts": {
     "start": "electron src/main.js",
     "pack": "electron-builder --dir",
-    "dist:linux": "electron-builder --linux AppImage",
+    "dist:linux": "electron-builder --linux",
     "dist:macOS": "electron-builder --mac",
     "dist:win": "electron-builder --win",
     "postinstall": "electron-builder install-app-deps",
@@ -41,7 +41,8 @@
       },
       "target": [
         "AppImage",
-        "deb"
+        "deb",
+        "rpm"
       ]
     },
     "win": {
