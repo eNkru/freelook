@@ -22,15 +22,15 @@
     "postinstall": "electron-builder install-app-deps",
     "publish": "build -p always"
   },
-  "devDependencies": {
-    "electron": "^9.1.0",
-    "electron-builder": "^20.44.4"
+	"devDependencies": {
+    "electron": ">=9.1.0",
+    "electron-builder": ">=22.8.0"
   },
   "dependencies": {
-    "electron-settings": "^3.2.0",
-    "electron-spellchecker": "^2.2.1",
-    "fs-extra": "^5.0.0",
-    "is-online": "^8.2.0"
+    "electron-settings": ">=3.2.0",
+    "electron-spellchecker": ">=2.2.1",
+    "fs-extra": ">=5.0.0",
+    "is-online": ">=8.2.0"
   },
   "build": {
     "appId": "nz.co.enkru.${name}",
