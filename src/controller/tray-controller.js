@@ -16,7 +16,7 @@ class TrayController {
         this.tray = new Tray(this.createTrayIcon(''));
 
         const context = Menu.buildFromTemplate([
-            {label: 'Open', click: () => this.showHide()},
+            {label: 'Open', click: () => this.showWindow()},
             {label: 'Separator', type: 'separator'},
             // {label: 'Window Frame', type: 'checkbox', checked: settings.get('showWindowFrame', true), click: () => this.toggleWindowFrame()},
             {label: 'Settings', click: () => this.openSettings()},
@@ -50,8 +50,8 @@ class TrayController {
         this.mailController.toggleWindow()
     }
 
-    showHide() {
-        this.mailController.toggleWindow();
+    showWindow() {
+        this.mailController.show();
     }
 
     toggleWindowFrame() {
