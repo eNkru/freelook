@@ -6,17 +6,17 @@ class CssInjector {}
 
 CssInjector.main = `
     /* hide the vertical ad bar */
-    .${fs.existsSync(`${app.getPath('userData')}/Settings`) ? settings.get('verticalAdsClass') : ''} {
+    .${fs.existsSync(`${app.getPath('userData')}/Settings`) ? settings.get('verticalAdsClass', 'some-class-does-not-exist') : 'some-class-does-not-exist'} {
         display: none !important;
     }
 
     /* hide the small ad bar in other email page */
-    .${fs.existsSync(`${app.getPath('userData')}/Settings`) ? settings.get('smallAdsClass') : ''} {
+    .${fs.existsSync(`${app.getPath('userData')}/Settings`) ? settings.get('smallAdsClass', 'some-class-does-not-exist') : 'some-class-does-not-exist'} {
         display: none !important;
     }
 
     /* hide the upgrade premium ad bar */
-    .${fs.existsSync(`${app.getPath('userData')}/Settings`) ? settings.get('premiumAdsClass') : ''} {
+    .${fs.existsSync(`${app.getPath('userData')}/Settings`) ? settings.get('premiumAdsClass', 'some-class-does-not-exist') : 'some-class-does-not-exist'} {
         display: none !important;
     }
 `
