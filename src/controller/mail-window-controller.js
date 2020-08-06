@@ -101,7 +101,7 @@ class MailWindowController {
                             }
                             if (unread.length)
                             {
-                                var notification = new Notification("Microsoft Outlook - receiving " + unread.length + " NEW mails.", {
+                                var notification = new Notification("Microsoft Outlook - receiving " + unread.length + " NEW mails", {
                                     body: body,
                                     icon: "assets/outlook_linux_black.png"
                                 });
