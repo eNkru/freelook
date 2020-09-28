@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain } = require('electron');
+const { app, BrowserWindow, shell, ipcMain, Menu, MenuItem, Notification } = require('electron');
 const settings = require('electron-settings');
 const CssInjector = require('../js/css-injector');
 const path = require('path');
@@ -32,9 +32,12 @@ class MailWindowController {
             icon: path.join(__dirname, '../../assets/outlook_linux_black.png'),
             webPreferences: {
                 nodeIntegration: true,
+                spellcheck: true,
                 preload: path.join(__dirname, '../js/preload.js')
             }
         });
+
+        this.win.webContents.openDevTools()
 
         // and load the index.html of the app.
         this.win.loadURL(homepageUrl);
@@ -44,15 +47,52 @@ class MailWindowController {
             this.show()
         });
 
+        let mailNotifications = [];
+        let notification = undefined;
+        // Show notification handler
+        ipcMain.on('showNotification', (event, data) => {
+
+            if (data) {
+                mailNotifications.push(data);
+
+                if (notification) {
+                    notification.close();
+                }
+
+                notification = new Notification({
+                    title: "Received " + mailNotifications.length + (mailNotifications.length === 1 ? " email" : " emails"),
+                    body: mailNotifications.map((n, i) => n.address + ": " + n.subject).join("\n"),
+
+                    timeoutType: "never",
+                    icon: "assets/outlook_linux_black.png",
+                    urgency: "normal",
+
+                });
+
+
+                notification.on("click", () => {
+                    mailNotifications = [];
+                    this.show();
+                });
+
+                notification.on("close", () => {
+                    mailNotifications = [];
+                    notification = undefined;
+                });
+                notification.show();
+            }
+        });
+
         // insert styles
-        this.win.webContents.on('dom-ready', () => {
+        this.win.webContents.on('dom-ready', (event) => {
             this.win.webContents.insertCSS(CssInjector.main);
             if (!showWindowFrame) this.win.webContents.insertCSS(CssInjector.noFrame);
 
-            this.addUnreadNumberObserver();
+            event.sender.send('registerCalloutObserver');
 
             this.win.show()
         });
+
 
         // prevent the app quit, hide the window instead.
         this.win.on('close', (e) => {
@@ -72,69 +112,33 @@ class MailWindowController {
 
         // Open the new window in external browser
         this.win.webContents.on('new-window', this.openInBrowser)
-    }
 
-    addUnreadNumberObserver() {
-        settingsExist && settings.get('unreadMessageClass') && this.win.webContents.executeJavaScript(`
-            setTimeout(() => {
-                let unreadSpan = document.querySelector(".${settings.get('unreadMessageClass')}");
-                require('electron').ipcRenderer.send('updateUnread', unreadSpan.hasChildNodes());
+        // Add context menu for build in spell checker
+        this.win.webContents.on('context-menu', (event, params) => {
 
-                let observer = new MutationObserver(mutations => {
-                    mutations.forEach(mutation => {
-                        // console.log('Observer Changed.');
-                        require('electron').ipcRenderer.send('updateUnread', unreadSpan.hasChildNodes());
-
-                        // Scrape messages and pop up a notification
-                        var messages = document.querySelectorAll('div[role="listbox"][aria-label="Message list"]');
-                        if (messages.length)
-                        {
-                            var unread = messages[0].querySelectorAll('div[aria-label^="Unread"]');
-                            var body = "";
-                            for (var i = 0; i < unread.length; i++)
-                            {
-                                if (body.length)
-                                {
-                                    body += "\\n";
-                                }
-                                body += unread[i].getAttribute("aria-label").substring(7, 127);
-                            }
-                            if (unread.length)
-                            {
-                                var notification = new Notification("Microsoft Outlook - receiving " + unread.length + " NEW mails", {
-                                    body: body,
-                                    icon: "assets/outlook_linux_black.png"
-                                });
-                                notification.onclick = () => {
-                                    require('electron').ipcRenderer.send('show');
-                                };
-                            }
-                        }
-                    });
-                });
-            
-                observer.observe(unreadSpan, {childList: true});
-
-                // If the div containing reminders gets taller we probably got a new
-                // reminder, so force the window to the top.
-                let reminders = document.getElementsByClassName("_1BWPyOkN5zNVyfbTDKK1gM");
-                let height = 0;
-                let reminderObserver = new MutationObserver(mutations => {
-                    mutations.forEach(mutation => {
-                        if (reminders[0].clientHeight > height)
-                        {
-                            require('electron').ipcRenderer.send('show');
-                        }
-                        height = reminders[0].clientHeight;
-                    });
-                });
-
-                if (reminders.length) {
-                    reminderObserver.observe(reminders[0], { childList: true });
+            if (params && params.dictionarySuggestions) {
+                const menu = new Menu()
+                // Add each spelling suggestion
+                for (const suggestion of params.dictionarySuggestions) {
+                    menu.append(new MenuItem({
+                        label: suggestion,
+                        click: () => this.win.webContents.replaceMisspelling(suggestion)
+                    }))
                 }
 
-            }, 10000);
-        `)
+                // Allow users to add the misspelled word to the dictionary
+                if (params.misspelledWord) {
+                    menu.append(
+                        new MenuItem({
+                            label: 'Add to dictionary',
+                            click: () => this.win.webContents.session.addWordToSpellCheckerDictionary(params.misspelledWord)
+                        })
+                    )
+                }
+
+                menu.popup()
+            }
+        });
     }
 
     toggleWindow() {
@@ -191,7 +195,7 @@ class MailWindowController {
     }
 
     connectToMicrosoft() {
-        (async () => await isOnline({timeout: 15000}))().then(result => {
+        (async () => await isOnline({ timeout: 15000 }))().then(result => {
             if (result) {
                 this.init();
                 this.splashWin.destroy();

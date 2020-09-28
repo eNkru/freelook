@@ -5,6 +5,7 @@
 /.idea
 *.iml
 /package-lock.json
-
+.history
+.vscode
 # Mac folder file
 *.DS_Store
