@@ -40,7 +40,7 @@ class MailWindowController {
         this.win.webContents.openDevTools()
 
         // and load the index.html of the app.
-        this.win.loadURL(homepageUrl);
+        this.win.loadURL(homepageUrl, {userAgent: 'Chrome'});
 
         // Show window handler
         ipcMain.on('show', () => {
