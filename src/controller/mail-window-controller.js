@@ -4,13 +4,19 @@ const CssInjector = require('../js/css-injector');
 const path = require('path');
 const fs = require('fs-extra');
 const isOnline = require('is-online');
-
+settings.configure({
+    fileName: 'Settings'
+});
 const settingsExist = fs.existsSync(`${app.getPath('userData')}/Settings`);
-const homepageUrl = settingsExist ? settings.get('homepageUrl', 'https://outlook.live.com/mail') : 'https://outlook.live.com/mail';
+const homepageUrl = settingsExist ? settings.getSync('homepageUrl', 'https://outlook.live.com/mail') : 'https://outlook.live.com/mail';
 const deeplinkUrls = ['outlook.live.com/mail/deeplink', 'outlook.office365.com/mail/deeplink', 'outlook.office.com/mail/deeplink'];
 const outlookUrls = ['outlook.live.com', 'outlook.office365.com', 'outlook.office.com'];
 
 class MailWindowController {
+
+    notifications = [];
+    notification = undefined;
+
     constructor() {
         this.initSplash();
         setTimeout(() => this.connectToMicrosoft(), 1000);
@@ -18,7 +24,7 @@ class MailWindowController {
 
     init() {
         // Get configurations.
-        const showWindowFrame = settings.get('showWindowFrame', true);
+        const showWindowFrame = settings.getSync('showWindowFrame', true);
 
         // Create the browser window.
         this.win = new BrowserWindow({
@@ -31,55 +37,86 @@ class MailWindowController {
             show: false,
             icon: path.join(__dirname, '../../assets/outlook_linux_black.png'),
             webPreferences: {
-                nodeIntegration: true,
+                enableRemoteModule: true,
+                nodeIntegration: false,
                 spellcheck: true,
                 preload: path.join(__dirname, '../js/preload.js')
             }
         });
 
-        this.win.webContents.openDevTools()
+        this.win.webContents.setUserAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3831.6 Safari/537.36");
+
+
+        this.win.webContents.openDevTools();
 
         // and load the index.html of the app.
-        this.win.loadURL(homepageUrl, {userAgent: 'Chrome'});
+        this.win.loadURL(homepageUrl);
 
         // Show window handler
         ipcMain.on('show', () => {
             this.show()
         });
 
-        let mailNotifications = [];
-        let notification = undefined;
         // Show notification handler
         ipcMain.on('showNotification', (event, data) => {
 
             if (data) {
-                mailNotifications.push(data);
+                this.notifications.push(data);
 
-                if (notification) {
-                    notification.close();
+                if (this.notification) {
+                    this.notification.close();
                 }
 
-                notification = new Notification({
-                    title: "Received " + mailNotifications.length + (mailNotifications.length === 1 ? " email" : " emails"),
-                    body: mailNotifications.map((n, i) => n.address + ": " + n.subject).join("\n"),
+                let emails = 0;
+                let reminder = 0;
+                for (const n of this.notifications) {
+                    if (n.type == "reminder") {
+                        reminder++;
+                    } else {
+                        emails++;
+                    }
+                }
 
-                    timeoutType: "never",
+                let title = ""
+                if (emails > 1) {
+                    title = emails + " new mails"
+                } else if (emails === 1) {
+                    title = emails + " new mail"
+                }
+
+                if (title !== "") {
+                    title = title + ", "
+                }
+                if (reminder > 0) {
+                    title = title + reminder + " new reminder"
+                }
+
+                this.notification = new Notification({
+                    title,
+                    body: this.notifications.map((n, i) => {
+                        if (n.type === "email") {
+                            return "Email from " + n.data.address + ": " + n.data.subject;
+                        } else if (n.type === "reminder") {
+                            return "Reminder: " + n.data.text + " (" + n.data.time + ")";
+                        }
+                    }).join("\n"),
+                    timeoutType: settings.getSync('notificationTimeout', 'default'),
                     icon: "assets/outlook_linux_black.png",
                     urgency: "normal",
 
                 });
 
 
-                notification.on("click", () => {
-                    mailNotifications = [];
+                this.notification.on("click", () => {
+                    this.notifications = [];
                     this.show();
                 });
 
-                notification.on("close", () => {
-                    mailNotifications = [];
-                    notification = undefined;
+                this.notification.on("close", () => {
+                    this.notifications = [];
+                    this.notification = undefined;
                 });
-                notification.show();
+                this.notification.show();
             }
         });
 
@@ -96,6 +133,9 @@ class MailWindowController {
 
         // prevent the app quit, hide the window instead.
         this.win.on('close', (e) => {
+            if (this.notification) {
+                this.notification.close();
+            }
             if (this.win.isVisible()) {
                 e.preventDefault();
                 this.win.hide()
@@ -108,6 +148,9 @@ class MailWindowController {
             // in an array if your app supports multi windows, this is the time
             // when you should delete the corresponding element.
             this.win = null
+            if (this.notification) {
+                this.notification.close();
+            }
         });
 
         // Open the new window in external browser
@@ -115,15 +158,16 @@ class MailWindowController {
 
         // Add context menu for build in spell checker
         this.win.webContents.on('context-menu', (event, params) => {
-
             if (params && params.dictionarySuggestions) {
+                let show = false;
                 const menu = new Menu()
                 // Add each spelling suggestion
                 for (const suggestion of params.dictionarySuggestions) {
                     menu.append(new MenuItem({
                         label: suggestion,
                         click: () => this.win.webContents.replaceMisspelling(suggestion)
-                    }))
+                    }));
+                    show = true;
                 }
 
                 // Allow users to add the misspelled word to the dictionary
@@ -133,10 +177,13 @@ class MailWindowController {
                             label: 'Add to dictionary',
                             click: () => this.win.webContents.session.addWordToSpellCheckerDictionary(params.misspelledWord)
                         })
-                    )
+                    );
+                    show = true;
                 }
 
-                menu.popup()
+                if (show) {
+                    menu.popup();
+                }
             }
         });
     }
@@ -194,15 +241,19 @@ class MailWindowController {
         });
     }
 
-    connectToMicrosoft() {
-        (async () => await isOnline({ timeout: 15000 }))().then(result => {
-            if (result) {
+    async connectToMicrosoft() {
+        try {
+            const online = await isOnline({ timeout: 15000 });
+            if (online) {
                 this.init();
                 this.splashWin.destroy();
             } else {
                 this.splashWin.webContents.send('connect-timeout');
             }
-        });
+        } catch (ex) {
+            console.log(ex);
+            this.splashWin.webContents.send('connect-timeout');
+        }
     }
 }
 

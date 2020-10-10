@@ -14,9 +14,11 @@ class SettingsWindow {
             autoHideMenuBar: true,
             show: false,
             webPreferences: {
-                nodeIntegration: true
+                nodeIntegration: true,
+                enableRemoteModule: true
             }
         });
+        // this.window.webContents.openDevTools();
         this.window.loadURL(`file://${path.join(__dirname, '../view/setting.html')}`);
         this.window.on('close', (e) => {
             if (this.window.isVisible()) {
