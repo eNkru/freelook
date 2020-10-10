@@ -7,8 +7,10 @@ const isOnline = require('is-online');
 settings.configure({
     fileName: 'Settings'
 });
+
 const settingsExist = fs.existsSync(`${app.getPath('userData')}/Settings`);
-const homepageUrl = settingsExist ? settings.getSync('homepageUrl', 'https://outlook.live.com/mail') : 'https://outlook.live.com/mail';
+
+const homepageUrl = settingsExist ? (settings.getSync('homepageUrl') ?? 'https://outlook.live.com/mail') : 'https://outlook.live.com/mail';
 const deeplinkUrls = ['outlook.live.com/mail/deeplink', 'outlook.office365.com/mail/deeplink', 'outlook.office.com/mail/deeplink'];
 const outlookUrls = ['outlook.live.com', 'outlook.office365.com', 'outlook.office.com'];
 
@@ -24,7 +26,7 @@ class MailWindowController {
 
     init() {
         // Get configurations.
-        const showWindowFrame = settings.getSync('showWindowFrame', true);
+        const showWindowFrame = settings.getSync('showWindowFrame')?? true;
 
         // Create the browser window.
         this.win = new BrowserWindow({
@@ -47,7 +49,7 @@ class MailWindowController {
         this.win.webContents.setUserAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3831.6 Safari/537.36");
 
 
-        this.win.webContents.openDevTools();
+        // this.win.webContents.openDevTools();
 
         // and load the index.html of the app.
         this.win.loadURL(homepageUrl);
@@ -100,7 +102,7 @@ class MailWindowController {
                             return "Reminder: " + n.data.text + " (" + n.data.time + ")";
                         }
                     }).join("\n"),
-                    timeoutType: settings.getSync('notificationTimeout', 'default'),
+                    timeoutType: settings.getSync('notificationTimeout')?? 'default',
                     icon: "assets/outlook_linux_black.png",
                     urgency: "normal",
 

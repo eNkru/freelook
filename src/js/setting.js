@@ -33,7 +33,7 @@ loadSettings = () => {
     unreadMsgInput.change(() => settings.set('unreadMessageClass', unreadMsgInput.val()));
 
     // load home url setting
-    const homepageUrl = settings.getSync('homepageUrl', 'https://outlook.live.com/mail');
+    const homepageUrl = settings.getSync('homepageUrl') ?? 'https://outlook.live.com/mail';
     let $homepageUrl = $('#homepageUrl');
     $homepageUrl.dropdown('set selected', homepageUrl);
     $homepageUrl.dropdown({
@@ -43,7 +43,7 @@ loadSettings = () => {
     });
 
     // load notification setting
-    const notificationTimeout = settings.getSync('notificationTimeout', 'default');
+    const notificationTimeout = settings.getSync('notificationTimeout') ?? 'default';
     const $notificationTimeout = $('#notificationTimeout');
     $notificationTimeout.dropdown('set selected', notificationTimeout);
     $notificationTimeout.dropdown({

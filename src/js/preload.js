@@ -98,49 +98,54 @@ function parseReminder(reminder) {
 
 }
 
+function registerCalloutObserver() {
+    console.log("Trying to register callout observer");
+    const layerDiv = document.querySelector(".ms-Layer-content");
+    if (layerDiv) {
+        const observer = new MutationObserver((mutations) => {
+            try {
+                for (const mutation of mutations) {
+                    for (const addedNode of mutation.addedNodes) {
+                        const newMail = addedNode.querySelector("button[data-storybook='newmail']");
+                        if (newMail) {
+                            parseEmail(newMail);
+                        } else {
 
-ipcRenderer.on('registerCalloutObserver', function (event, data) {
-    setTimeout(() => {
-
-        console.log("Trying to register callout observer");
-        const layerDiv = document.querySelector(".ms-Layer-content");
-        if (layerDiv) {
-            const observer = new MutationObserver((mutations) => {
-                try {
-                    for (const mutation of mutations) {
-                        for (const addedNode of mutation.addedNodes) {
-                            const newMail = addedNode.querySelector("button[data-storybook='newmail']");
-                            if (newMail) {
-                                parseEmail(newMail);
+                            const reminder = addedNode.querySelector("button[data-storybook='reminder']");
+                            if (reminder) {
+                                parseReminder(reminder);
                             } else {
-
-                                const reminder = addedNode.querySelector("button[data-storybook='reminder']");
-                                if (reminder) {
-                                    parseReminder(reminder);
-                                } else {
-                                    console.log(addedNode.outerHTML);
-                                }
+                                console.log(addedNode.outerHTML);
                             }
                         }
                     }
-                } catch (ex) {
-                    console.log(ex);
                 }
-            });
-
-            console.log("Starting observer for notifications");
-            observer.observe(layerDiv, { childList: true, subtree: true });
-
-            console.log("Searching for existing reminders");
-            const reminders = document.querySelectorAll("button[data-storybook='reminder']");
-            for(const reminder of reminders){
-                parseReminder(reminder);
+            } catch (ex) {
+                console.log(ex);
             }
+        });
 
+        console.log("Starting observer for notifications");
+        observer.observe(layerDiv, { childList: true, subtree: true });
 
-        } else {
-            console.log("Could not register notification observer. Notifications not supported");
-            alert("Could not register notification observer. Notifications not supported");
+        console.log("Searching for existing reminders");
+        const reminders = document.querySelectorAll("button[data-storybook='reminder']");
+        for (const reminder of reminders) {
+            parseReminder(reminder);
         }
+
+
+    } else {
+        console.log("Could not register notification observer. Notifications not supported, Retrying in 5 seconds");
+        setTimeout(() => {
+            registerCalloutObserver();
+        }, 5000);
+    }
+
+}
+
+ipcRenderer.on('registerCalloutObserver', function (event, data) {
+    setTimeout(() => {
+        registerCalloutObserver();
     }, 5000);
 });
