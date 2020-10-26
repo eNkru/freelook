@@ -1,16 +1,8 @@
 const { app, BrowserWindow, shell, ipcMain, Menu, MenuItem, Notification } = require('electron');
-const settings = require('electron-settings');
-const CssInjector = require('../js/css-injector');
 const path = require('path');
-const fs = require('fs-extra');
+const CssInjector = require('../js/css-injector');
 const isOnline = require('is-online');
-settings.configure({
-    fileName: 'Settings'
-});
 
-const settingsExist = fs.existsSync(`${app.getPath('userData')}/Settings`);
-
-const homepageUrl = settingsExist ? (settings.getSync('homepageUrl') ?? 'https://outlook.live.com/mail') : 'https://outlook.live.com/mail';
 const deeplinkUrls = ['outlook.live.com/mail/deeplink', 'outlook.office365.com/mail/deeplink', 'outlook.office.com/mail/deeplink'];
 const outlookUrls = ['outlook.live.com', 'outlook.office365.com', 'outlook.office.com'];
 
@@ -19,14 +11,15 @@ class MailWindowController {
     notifications = [];
     notification = undefined;
 
-    constructor() {
+    constructor(config) {
+        this.config = config;
         this.initSplash();
         setTimeout(() => this.connectToMicrosoft(), 1000);
     }
 
     init() {
         // Get configurations.
-        const showWindowFrame = settings.getSync('showWindowFrame')?? true;
+        const showWindowFrame = this.config.get('showWindowFrame',true);
 
         // Create the browser window.
         this.win = new BrowserWindow({
@@ -52,7 +45,7 @@ class MailWindowController {
         // this.win.webContents.openDevTools();
 
         // and load the index.html of the app.
-        this.win.loadURL(homepageUrl);
+        this.win.loadURL(this.config.get("homepageUrl",'https://outlook.live.com/mail'));
 
         // Show window handler
         ipcMain.on('show', () => {
@@ -102,7 +95,7 @@ class MailWindowController {
                             return "Reminder: " + n.data.text + " (" + n.data.time + ")";
                         }
                     }).join("\n"),
-                    timeoutType: settings.getSync('notificationTimeout')?? 'default',
+                    timeoutType: this.config.get('notificationTimeout','default'),
                     icon: "assets/outlook_linux_black.png",
                     urgency: "normal",
 
@@ -124,7 +117,7 @@ class MailWindowController {
 
         // insert styles
         this.win.webContents.on('dom-ready', (event) => {
-            this.win.webContents.insertCSS(CssInjector.main);
+            this.win.webContents.insertCSS(CssInjector.main(this.config));
             if (!showWindowFrame) this.win.webContents.insertCSS(CssInjector.noFrame);
 
             event.sender.send('registerCalloutObserver');
