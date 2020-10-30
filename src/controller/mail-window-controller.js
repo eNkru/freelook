@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain } = require('electron');
+const { app, BrowserWindow, shell, ipcMain, Menu, MenuItem, } = require('electron');
 const settings = require('electron-settings');
 const CssInjector = require('../js/css-injector');
 const path = require('path');
@@ -32,6 +32,7 @@ class MailWindowController {
             icon: path.join(__dirname, '../../assets/outlook_linux_black.png'),
             webPreferences: {
                 nodeIntegration: true,
+                spellcheck: true,
                 preload: path.join(__dirname, '../js/preload.js')
             }
         });
@@ -71,7 +72,39 @@ class MailWindowController {
         });
 
         // Open the new window in external browser
-        this.win.webContents.on('new-window', this.openInBrowser)
+        this.win.webContents.on('new-window', this.openInBrowser);
+
+        // Add context menu for build in spell checker
+        this.win.webContents.on('context-menu', (event, params) => {
+            if (params && params.dictionarySuggestions) {
+                let show = false;
+                const menu = new Menu()
+                // Add each spelling suggestion (if available)
+                for (const suggestion of params.dictionarySuggestions) {
+                    menu.append(new MenuItem({
+                        label: suggestion,
+                        click: () => this.win.webContents.replaceMisspelling(suggestion)
+                    }));
+                    show = true;
+                }
+
+                // Allow users to add the misspelled word to the dictionary
+                if (params.misspelledWord) {
+                    menu.append(
+                        new MenuItem({
+                            label: 'Add to dictionary',
+                            click: () => this.win.webContents.session.addWordToSpellCheckerDictionary(params.misspelledWord)
+                        })
+                    );
+                    show = true;
+                }
+
+                // Show the context menu if there a spelling suggestion or a misspelled word exist
+                if (show) {
+                    menu.popup();
+                }
+            }
+        });
     }
 
     addUnreadNumberObserver() {
@@ -191,7 +224,7 @@ class MailWindowController {
     }
 
     connectToMicrosoft() {
-        (async () => await isOnline({timeout: 15000}))().then(result => {
+        (async () => await isOnline({ timeout: 15000 }))().then(result => {
             if (result) {
                 this.init();
                 this.splashWin.destroy();
