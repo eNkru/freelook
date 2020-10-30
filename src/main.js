@@ -2,6 +2,8 @@ const { app } = require('electron')
 const MailWindowController = require('./controller/mail-window-controller')
 const TrayController = require('./controller/tray-controller')
 const MenuController = require('./controller/menu-controller')
+const Store = require('electron-store')
+
 app.commandLine.appendSwitch("auth-server-whitelist", "*");
 app.commandLine.appendSwitch("enable-ntlm-v2", "true");
 
@@ -10,7 +12,11 @@ class ElectronOutlook {
   constructor() {
     this.mailController = null;
     this.trayController = null;
-    this.menuController = null
+    this.menuController = null;
+    this.config = new Store({
+      name: "Settings",
+      fileExtension: "",
+    });
   }
 
   // init method, the entry point of the app
@@ -57,8 +63,8 @@ class ElectronOutlook {
   }
 
   createControllers() {
-    this.mailController = new MailWindowController()
-    this.trayController = new TrayController(this.mailController)
+    this.mailController = new MailWindowController(this.config)
+    this.trayController = new TrayController(this.mailController,this.config)
     this.menuController = new MenuController()
   }
 }

@@ -1,9 +1,10 @@
 const path = require('path');
-const { BrowserWindow } = require('electron');
+const { BrowserWindow,ipcMain } = require('electron');
 
 class SettingsWindow {
 
-    constructor() {
+    constructor(config) {
+        this.config = config;
         this.init();
     }
 
@@ -14,7 +15,8 @@ class SettingsWindow {
             autoHideMenuBar: true,
             show: false,
             webPreferences: {
-                nodeIntegration: true
+                nodeIntegration: true,
+                enableRemoteModule: true
             }
         });
         this.window.loadURL(`file://${path.join(__dirname, '../view/setting.html')}`);
@@ -23,6 +25,18 @@ class SettingsWindow {
                 e.preventDefault();
                 this.window.hide();
             }
+        });
+
+        ipcMain.on("getConfig", (event, key, defaultValue) => {
+            event.returnValue = this.config.get(key, defaultValue);
+        });
+
+        ipcMain.on("getConfigs", (event) => {
+            event.returnValue = this.config.store;
+        });
+
+        ipcMain.on("setConfig", (event, key, value) => {
+            this.config.set(key, value);
         });
     }
 
