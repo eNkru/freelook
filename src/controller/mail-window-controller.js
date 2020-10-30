@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain } = require('electron');
+const { app, BrowserWindow, shell, ipcMain, Notification } = require('electron');
 const settings = require('electron-settings');
 const CssInjector = require('../js/css-injector');
 const path = require('path');
@@ -11,6 +11,12 @@ const deeplinkUrls = ['outlook.live.com/mail/deeplink', 'outlook.office365.com/m
 const outlookUrls = ['outlook.live.com', 'outlook.office365.com', 'outlook.office.com'];
 
 class MailWindowController {
+
+    // Current displayed notifications.
+    notifications = [];
+    // Notification handle
+    notificationHandle = undefined;
+
     constructor() {
         this.initSplash();
         setTimeout(() => this.connectToMicrosoft(), 1000);
@@ -36,6 +42,8 @@ class MailWindowController {
             }
         });
 
+        this.win.webContents.setUserAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3831.6 Safari/537.36");
+
         // and load the index.html of the app.
         this.win.loadURL(homepageUrl);
 
@@ -44,12 +52,17 @@ class MailWindowController {
             this.show()
         });
 
+        // Show notification handler
+        ipcMain.on('showNotification', (event, data) => {
+            this.showNotifications(data);
+        });
+
         // insert styles
-        this.win.webContents.on('dom-ready', () => {
+        this.win.webContents.on('dom-ready', (event) => {
             this.win.webContents.insertCSS(CssInjector.main);
             if (!showWindowFrame) this.win.webContents.insertCSS(CssInjector.noFrame);
 
-            this.addUnreadNumberObserver();
+            event.sender.send('registerCalloutObserver');
 
             this.win.show()
         });
@@ -64,6 +77,9 @@ class MailWindowController {
 
         // Emitted when the window is closed.
         this.win.on('closed', () => {
+            if (this.notificationHandle) {
+                this.notificationHandle.close();
+            }
             // Dereference the window object, usually you would store windows
             // in an array if your app supports multi windows, this is the time
             // when you should delete the corresponding element.
@@ -74,67 +90,66 @@ class MailWindowController {
         this.win.webContents.on('new-window', this.openInBrowser)
     }
 
-    addUnreadNumberObserver() {
-        settingsExist && settings.get('unreadMessageClass') && this.win.webContents.executeJavaScript(`
-            setTimeout(() => {
-                let unreadSpan = document.querySelector(".${settings.get('unreadMessageClass')}");
-                require('electron').ipcRenderer.send('updateUnread', unreadSpan.hasChildNodes());
+    showNotifications(data) {
 
-                let observer = new MutationObserver(mutations => {
-                    mutations.forEach(mutation => {
-                        // console.log('Observer Changed.');
-                        require('electron').ipcRenderer.send('updateUnread', unreadSpan.hasChildNodes());
+        if (data) {
+            this.notifications.push(data);
 
-                        // Scrape messages and pop up a notification
-                        var messages = document.querySelectorAll('div[role="listbox"][aria-label="Message list"]');
-                        if (messages.length)
-                        {
-                            var unread = messages[0].querySelectorAll('div[aria-label^="Unread"]');
-                            var body = "";
-                            for (var i = 0; i < unread.length; i++)
-                            {
-                                if (body.length)
-                                {
-                                    body += "\\n";
-                                }
-                                body += unread[i].getAttribute("aria-label").substring(7, 127);
-                            }
-                            if (unread.length)
-                            {
-                                var notification = new Notification("Microsoft Outlook - receiving " + unread.length + " NEW mails", {
-                                    body: body,
-                                    icon: "assets/outlook_linux_black.png"
-                                });
-                                notification.onclick = () => {
-                                    require('electron').ipcRenderer.send('show');
-                                };
-                            }
-                        }
-                    });
-                });
-            
-                observer.observe(unreadSpan, {childList: true});
+            if (this.notificationHandle) {
+                this.notificationHandle.close();
+            }
 
-                // If the div containing reminders gets taller we probably got a new
-                // reminder, so force the window to the top.
-                let reminders = document.getElementsByClassName("_1BWPyOkN5zNVyfbTDKK1gM");
-                let height = 0;
-                let reminderObserver = new MutationObserver(mutations => {
-                    mutations.forEach(mutation => {
-                        if (reminders[0].clientHeight > height)
-                        {
-                            require('electron').ipcRenderer.send('show');
-                        }
-                        height = reminders[0].clientHeight;
-                    });
-                });
-
-                if (reminders.length) {
-                    reminderObserver.observe(reminders[0], { childList: true });
+            let emails = 0;
+            let reminder = 0;
+            for (const n of this.notifications) {
+                if (n.type == "reminder") {
+                    reminder++;
+                } else {
+                    emails++;
                 }
+            }
 
-            }, 10000);
-        `)
+            let title = ""
+            if (emails > 1) {
+                title = emails + " new mails"
+            } else if (emails === 1) {
+                title = emails + " new mail"
+            }
+
+            if (title !== "") {
+                title = title + ", "
+            }
+            if (reminder > 0) {
+                title = title + reminder + " new reminder"
+            }
+
+            this.notificationHandle = new Notification({
+                title,
+                body: this.notifications.map((n, i) => {
+                    if (n.type === "email") {
+                        return "Email from " + n.data.address + ": " + n.data.subject;
+                    } else if (n.type === "reminder") {
+                        return "Reminder: " + n.data.text + " (" + n.data.time + ")";
+                    }
+                }).join("\n"),
+                timeoutType: settings.get('notificationTimeout', 'default'),
+                icon: "assets/outlook_linux_black.png",
+                urgency: "normal",
+
+            });
+
+
+            this.notificationHandle.on("click", () => {
+                this.notifications = [];
+                this.show();
+            });
+
+            this.notificationHandle.on("close", () => {
+                this.notifications = [];
+                this.notificationHandle = undefined;
+            });
+            this.notificationHandle.show();
+        }
     }
 
     toggleWindow() {
@@ -191,7 +206,7 @@ class MailWindowController {
     }
 
     connectToMicrosoft() {
-        (async () => await isOnline({timeout: 15000}))().then(result => {
+        (async () => await isOnline({ timeout: 15000 }))().then(result => {
             if (result) {
                 this.init();
                 this.splashWin.destroy();

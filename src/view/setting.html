@@ -8,7 +8,7 @@
     <link href="../css/setting.css" rel="stylesheet">
 </head>
 
-<body style="height: auto">
+<body style="height: auto; overflow: scroll">
 <div class="ui main text container">
     <div class="ui horizontal divider">
         <h2 id="setting-header" class="ui header">Manage your settings</h2>
@@ -68,6 +68,27 @@
                 <div class="item">https://outlook.office.com/mail</div>
             </div>
         </div>
+
+
+        <h3 id="home-url-title" class="ui header">
+            <div class="content">
+                Notification Timeout
+                <div class="sub header">
+                    <p>Timeout duration for the notification.</p>
+                    <p> If timeoutType is set to 'never',  the notification never expires. 
+                    It stays open until clicking on the notification or closing the app.</p></div>
+            </div>
+        </h3>
+
+        <div id="notificationTimeout" class="ui floating fluid dropdown labeled search icon button">
+            <i class="home icon"></i>
+            <span class="text">Select Notification Timeout</span>
+            <div class="menu">
+                <div class="item">default</div>
+                <div class="item">never</div>
+            </div>
+        </div>
+
     </div>
 </div>
 
