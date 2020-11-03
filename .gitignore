@@ -6,5 +6,6 @@
 *.iml
 /package-lock.json
 .history
+
 # Mac folder file
 *.DS_Store

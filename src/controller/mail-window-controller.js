@@ -1,24 +1,21 @@
 const { app, BrowserWindow, shell, ipcMain, Menu, MenuItem, } = require('electron');
-const settings = require('electron-settings');
 const CssInjector = require('../js/css-injector');
 const path = require('path');
-const fs = require('fs-extra');
 const isOnline = require('is-online');
 
-const settingsExist = fs.existsSync(`${app.getPath('userData')}/Settings`);
-const homepageUrl = settingsExist ? settings.get('homepageUrl', 'https://outlook.live.com/mail') : 'https://outlook.live.com/mail';
 const deeplinkUrls = ['outlook.live.com/mail/deeplink', 'outlook.office365.com/mail/deeplink', 'outlook.office.com/mail/deeplink'];
 const outlookUrls = ['outlook.live.com', 'outlook.office365.com', 'outlook.office.com'];
 
 class MailWindowController {
-    constructor() {
+    constructor(config) {
+        this.config = config;
         this.initSplash();
         setTimeout(() => this.connectToMicrosoft(), 1000);
     }
 
     init() {
         // Get configurations.
-        const showWindowFrame = settings.get('showWindowFrame', true);
+        const showWindowFrame = this.config.get('showWindowFrame',true);
 
         // Create the browser window.
         this.win = new BrowserWindow({
@@ -31,6 +28,7 @@ class MailWindowController {
             show: false,
             icon: path.join(__dirname, '../../assets/outlook_linux_black.png'),
             webPreferences: {
+                enableRemoteModule: true,
                 nodeIntegration: true,
                 spellcheck: true,
                 preload: path.join(__dirname, '../js/preload.js')
@@ -38,7 +36,7 @@ class MailWindowController {
         });
 
         // and load the index.html of the app.
-        this.win.loadURL(homepageUrl);
+        this.win.loadURL(this.config.get("homepageUrl",'https://outlook.live.com/mail'));
 
         // Show window handler
         ipcMain.on('show', () => {
@@ -47,7 +45,7 @@ class MailWindowController {
 
         // insert styles
         this.win.webContents.on('dom-ready', () => {
-            this.win.webContents.insertCSS(CssInjector.main);
+            this.win.webContents.insertCSS(CssInjector.main(this.config));
             if (!showWindowFrame) this.win.webContents.insertCSS(CssInjector.noFrame);
 
             this.addUnreadNumberObserver();
@@ -108,9 +106,9 @@ class MailWindowController {
     }
 
     addUnreadNumberObserver() {
-        settingsExist && settings.get('unreadMessageClass') && this.win.webContents.executeJavaScript(`
+        this.config.get('unreadMessageClass') && this.win.webContents.executeJavaScript(`
             setTimeout(() => {
-                let unreadSpan = document.querySelector(".${settings.get('unreadMessageClass')}");
+                let unreadSpan = document.querySelector(".${this.config.get('unreadMessageClass')}");
                 require('electron').ipcRenderer.send('updateUnread', unreadSpan.hasChildNodes());
 
                 let observer = new MutationObserver(mutations => {

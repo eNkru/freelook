@@ -1,14 +1,14 @@
 const { app, Tray, nativeImage, Menu, ipcMain } = require('electron');
-const settings = require('electron-settings');
 const path = require('path');
 const SettingsController = require('./setting-controller');
 
 const macOS = process.platform === 'darwin';
 
 class TrayController {
-    constructor(mailController) {
+    constructor(mailController,config) {
+        this.config = config;
         this.mailController = mailController;
-        this.settingController = new SettingsController();
+        this.settingController = new SettingsController(config);
         this.init()
     }
 
@@ -18,7 +18,7 @@ class TrayController {
         const context = Menu.buildFromTemplate([
             {label: 'Open', click: () => this.showWindow()},
             {label: 'Separator', type: 'separator'},
-            // {label: 'Window Frame', type: 'checkbox', checked: settings.get('showWindowFrame', true), click: () => this.toggleWindowFrame()},
+            // {label: 'Window Frame', type: 'checkbox', checked: this.config.get('showWindowFrame', true), click: () => this.toggleWindowFrame()},
             {label: 'Settings', click: () => this.openSettings()},
             {label: 'Quit', click: () => this.cleanupAndQuit()}
         ]);
@@ -55,7 +55,7 @@ class TrayController {
     }
 
     toggleWindowFrame() {
-        settings.set('showWindowFrame', !settings.get('showWindowFrame'));
+        this.config.set('showWindowFrame', !this.config.get('showWindowFrame',false));
         this.mailController.win.destroy();
         this.mailController.init()
     }

@@ -24,6 +24,9 @@ The released application can be downloaded [here](https://github.com/eNkru/elect
 
 The workaround is set some invalid values in the Ads Blocker settings. The settings come with the default value, you need to input some random numbers to overwrite them.
 
+`Desktop Integration not updated/created when using AppImage`
+
+Since electron-builder 21 desktop integration is not a part of produced AppImage file anymore. Electron builder recommends [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) to install AppImages and create Desktop Integration or to create the desktop files manually.
 
 ## Build Pre-Request
 * [GIT](https://git-scm.com/)
