@@ -36,4 +36,13 @@ loadSettings = () => {
             ipcRenderer.send("setConfig",'homepageUrl', value);
         }
     });
+
+    // Window position and size handling
+    let $windowReset = $('#windowReset');
+    $windowReset.click(() => {
+        ipcRenderer.send("deleteConfig", 'windowFrameX');
+        ipcRenderer.send("deleteConfig", 'windowFrameY');
+        ipcRenderer.send("deleteConfig", 'windowFrameWidth');
+        ipcRenderer.send("deleteConfig", 'windowFrameHeight');
+    });
 };

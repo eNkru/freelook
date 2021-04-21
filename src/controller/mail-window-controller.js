@@ -15,14 +15,18 @@ class MailWindowController {
 
     init() {
         // Get configurations.
-        const showWindowFrame = this.config.get('showWindowFrame',true);
+        const showWindowFrame = this.config.get('showWindowFrame', true);
+        const windowFrameX = this.config.get('windowFrameX', 100);
+        const windowFrameY = this.config.get('windowFrameY', 100);
+        const windowFrameWidth = this.config.get('windowFrameWidth', 1400);
+        const windowFrameHeight = this.config.get('windowFrameHeight', 900);
 
         // Create the browser window.
         this.win = new BrowserWindow({
-            x: 100,
-            y: 100,
-            width: 1400,
-            height: 900,
+            x: windowFrameX,
+            y: windowFrameY,
+            width: windowFrameWidth,
+            height: windowFrameHeight,
             frame: showWindowFrame,
             autoHideMenuBar: true,
             show: false,
@@ -41,6 +45,20 @@ class MailWindowController {
         // Show window handler
         ipcMain.on('show', () => {
             this.show()
+        });
+
+        // Save the new position of window
+        this.win.on('move', (e) => {
+            var position = this.win.getPosition();
+            this.config.set('windowFrameX', position[0]);
+            this.config.set('windowFrameY', position[1]);
+        });
+
+        // Save resized size of window
+        this.win.on('resize', (e) => {
+            var size = this.win.getSize();
+            this.config.set('windowFrameWidth', size[0]);
+            this.config.set('windowFrameHeight', size[1]);
         });
 
         // insert styles
