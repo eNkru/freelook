@@ -11,7 +11,7 @@ class SettingsWindow {
     init() {
         this.window = new BrowserWindow({
             width: 500,
-            height: 700,
+            height: 750,
             autoHideMenuBar: true,
             show: false,
             webPreferences: {
@@ -37,6 +37,10 @@ class SettingsWindow {
 
         ipcMain.on("setConfig", (event, key, value) => {
             this.config.set(key, value);
+        });
+
+        ipcMain.on("deleteConfig", (event, key) => {
+            this.config.delete(key);
         });
     }
 
