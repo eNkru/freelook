@@ -1,3 +1,5 @@
+<img src="build/icons/128x128.png" alt="logo" height="80" align="right" />
+
 # Freelook
 
 Freelook, an Electron-based desktop app for Microsoft Outlook and Office 365.
