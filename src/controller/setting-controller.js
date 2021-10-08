@@ -16,6 +16,7 @@ class SettingsWindow {
             show: false,
             webPreferences: {
                 nodeIntegration: true,
+                contextIsolation: false,
                 enableRemoteModule: true
             }
         });
