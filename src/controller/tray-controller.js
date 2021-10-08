@@ -14,6 +14,7 @@ class TrayController {
 
     init() {
         this.tray = new Tray(this.createTrayIcon(''));
+        this.tray.setIgnoreDoubleClickEvents(true);
 
         const context = Menu.buildFromTemplate([
             {label: 'Open', click: () => this.showWindow()},
@@ -24,8 +25,10 @@ class TrayController {
         ]);
 
         this.tray.setContextMenu(context);
-
         this.tray.on('click', () => this.fireClickEvent());
+        // Special click handle for macOS as this event is only for macOS.
+        // This will fix the unreliable click event in macOS.
+        this.tray.on('mouse-down', () => this.fireMouseDownEvent());
 
         ipcMain.on('updateUnread', (event, value) => {
             this.tray.setImage(this.createTrayIcon(value))
@@ -47,7 +50,15 @@ class TrayController {
     }
 
     fireClickEvent() {
-        this.mailController.toggleWindow()
+        if(!macOS) {
+            this.mailController.show();
+        }
+    }
+
+    fireMouseDownEvent() {
+        if(macOS) {
+            this.mailController.show();
+        }
     }
 
     showWindow() {
