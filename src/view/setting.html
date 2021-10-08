@@ -80,8 +80,10 @@
     </div>
 </div>
 
-<script>window.$ = window.jQuery = require('../../resources/jquery-3.4.1.min.js');</script>
+<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+<script src="../../resources/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
-<script>require('../js/setting.js');</script>
+<script src="../js/setting.js"></script>
+<script>if (window.module) module = window.module;</script>
 </body>
 </html>
