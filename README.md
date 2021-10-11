@@ -2,9 +2,7 @@
 
 # Freelook
 
-Freelook, an Electron-based desktop app for Microsoft Outlook and Office 365.
-
-![screenshot_linux](https://user-images.githubusercontent.com/13460738/35953459-a0875872-0ce9-11e8-9bca-880564b9beee.png)
+Freelook, an alternative Electron-based desktop app to help you manage Outlook and Office 365.
 
 ## Feature
 * Receive your hotmail / outlook / office 365 online from the desktop app
@@ -55,4 +53,6 @@ npm publish
 ```
 
 ## License
+This app helps some people like me who couldn't (or don't wish to) install an POP or SMPT mail client to manage their outlook & hotmail emails. Please raise any concern to me if any of the code or resource voilate your copyright or trademark.
+
 [MIT](https://github.com/eNkru/electron-xiami/blob/master/LICENSE) @ [Howard Ju](https://enkru.github.io/)
