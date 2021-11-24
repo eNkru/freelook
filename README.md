@@ -4,6 +4,8 @@
 
 Freelook, an alternative Electron-based desktop app to help you manage Outlook and Office 365.
 
+**This app helps some people like me who couldn't (or don't wish to) install an POP or SMPT mail client to manage their outlook & hotmail emails. Please raise any concern to me if any of the code or resource voilate your copyright or trademark.**
+
 ## Feature
 * Receive your hotmail / outlook / office 365 online from the desktop app
 * Close to minimise
