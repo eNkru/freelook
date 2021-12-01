@@ -1,7 +1,9 @@
-const { app } = require('electron')
+const path = require('path')
+const { app, BrowserWindow, ipcMain } = require('electron')
 const MailWindowController = require('./controller/mail-window-controller')
 const TrayController = require('./controller/tray-controller')
 const MenuController = require('./controller/menu-controller')
+const LoginController = require('./controller/login-controller')
 const Store = require('electron-store')
 
 app.commandLine.appendSwitch("auth-server-whitelist", "*");
@@ -13,6 +15,7 @@ class ElectronOutlook {
     this.mailController = null;
     this.trayController = null;
     this.menuController = null;
+    this.loginController = null;
     this.config = new Store({
       name: "Settings",
       fileExtension: "",
@@ -60,12 +63,19 @@ class ElectronOutlook {
         this.mailController.show()
       }
     })
+
+    app.on('login', async (event, webContents, request, authInfo, callback) => {
+      event.preventDefault()
+      const { username, password } = await this.loginController.login()
+      callback(username, password)
+    })
   }
 
   createControllers() {
     this.mailController = new MailWindowController(this.config)
     this.trayController = new TrayController(this.mailController,this.config)
     this.menuController = new MenuController()
+    this.loginController = new LoginController()
   }
 }
 
