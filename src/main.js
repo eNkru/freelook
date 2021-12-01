@@ -1,5 +1,4 @@
-const path = require('path')
-const { app, BrowserWindow, ipcMain } = require('electron')
+const { app } = require('electron')
 const MailWindowController = require('./controller/mail-window-controller')
 const TrayController = require('./controller/tray-controller')
 const MenuController = require('./controller/menu-controller')

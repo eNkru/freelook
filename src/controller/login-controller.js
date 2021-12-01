@@ -3,8 +3,7 @@ const { BrowserWindow, ipcMain } = require('electron');
 
 class LoginController {
 
-    constructor(config) {
-        this.config = config;
+    constructor() {
         this.init();
     }
 
