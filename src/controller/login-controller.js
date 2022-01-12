@@ -23,7 +23,7 @@ class LoginController {
             if (this.window.isVisible()) {
                 e.preventDefault();
                 this.window.hide();
-                this.resolve({ username: '', password: '' });
+                this.resolve({});
             }
         });
         this.resolve = () => {};
