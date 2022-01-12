@@ -8,9 +8,15 @@ class LoginController {
     }
 
     init() {
+        const width = 300;
+        const height = 150;
         this.window = new BrowserWindow({
-            width: 300,
-            height: 150,
+            width,
+            height,
+            maxWidth: width,
+            maxHeight: height,
+            modal: true,
+            alwaysOnTop: true,
             autoHideMenuBar: true,
             show: false,
             webPreferences: {
@@ -34,10 +40,28 @@ class LoginController {
         });
     }
 
-    login() {
+    async login(parent) {
+        this.window.setParentWindow(parent);
+        setWindowCenterPosition(this.window, ...getWindowCenterPosition(parent));
         this.window.show();
-        return new Promise((resolve) => { this.resolve = resolve });
+        parent.setEnabled(false);
+        try {
+            return await new Promise((resolve) => { this.resolve = resolve });
+        } finally {
+            parent.setEnabled(true);
+        }
     }
+}
+
+function getWindowCenterPosition(win) {
+    const [x, y] = win.getPosition();
+    const [width, height] = win.getSize();
+    return [x + width / 2, y + height / 2];
+}
+
+function setWindowCenterPosition(win, x, y) {
+    const [width, height] = win.getSize();
+    win.setPosition(Math.trunc(x - width / 2), Math.trunc(y - height / 2));
 }
 
 module.exports = LoginController;

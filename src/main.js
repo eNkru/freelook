@@ -65,7 +65,7 @@ class ElectronOutlook {
 
     app.on('login', async (event, webContents, request, authInfo, callback) => {
       event.preventDefault()
-      const { username, password } = await this.loginController.login()
+      const { username, password } = await this.loginController.login(this.mailController.win)
       callback(username, password)
     })
   }
