@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Error</title>
+</head>
+
+<body>
+<center>
+    <h1 id="error-message"></h1>
+    <button onclick="history.back()">Try again</button>
+</center>
+
+<script src="../../resources/jquery-3.4.1.min.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+$('#error-message').text(params.get('code') + ' ' + params.get('message'));
+</script>
+</body>
+</html>

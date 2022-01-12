@@ -61,6 +61,16 @@ class MailWindowController {
             this.config.set('windowFrameHeight', size[1]);
         });
 
+        this.win.webContents.on('did-navigate', (event, url, httpResponseCode, httpStatusText) => {
+            if (httpResponseCode >= 400) {
+                const params = new URLSearchParams({ code: httpResponseCode, message: httpStatusText });
+                this.win.loadFile(path.join(__dirname, '../view/error.html'), { query: {
+                    code: httpResponseCode,
+                    message: httpStatusText
+                }});
+            }
+        });
+
         // insert styles
         this.win.webContents.on('dom-ready', () => {
             this.win.webContents.insertCSS(CssInjector.main(this.config));
