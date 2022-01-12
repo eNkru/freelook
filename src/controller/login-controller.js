@@ -24,7 +24,6 @@ class LoginController {
                 contextIsolation: false,
             }
         });
-        this.window.loadURL(`file://${path.join(__dirname, '../view/login.html')}`);
         this.window.on('close', (e) => {
             if (this.window.isVisible()) {
                 e.preventDefault();
@@ -40,9 +39,10 @@ class LoginController {
         });
     }
 
-    async login(parent) {
+    async login(parent, origin) {
         this.window.setParentWindow(parent);
         setWindowCenterPosition(this.window, ...getWindowCenterPosition(parent));
+        this.window.loadFile(path.join(__dirname, '../view/login.html'), { query: { origin }});
         this.window.show();
         parent.setEnabled(false);
         try {

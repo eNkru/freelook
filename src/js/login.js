@@ -7,3 +7,6 @@ form.addEventListener('submit', function (event) {
   const password = document.getElementById('password-input').value;
   ipcRenderer.send('login', { username, password });
 });
+
+const params = new URLSearchParams(window.location.search);
+document.getElementById('origin').textContent = params.get('origin');
