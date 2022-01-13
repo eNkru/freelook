@@ -8,8 +8,8 @@ class LoginController {
     }
 
     init() {
-        const width = 300;
-        const height = 150;
+        const width = 350;
+        const height = 270;
         this.window = new BrowserWindow({
             width,
             height,
