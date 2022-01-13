@@ -40,7 +40,7 @@ class MailWindowController {
         });
 
         // and load the index.html of the app.
-        this.win.loadURL(this.config.get("homepageUrl",'https://outlook.live.com/mail'));
+        this.win.loadURL(this.getHomepageUrl());
 
         // Show window handler
         ipcMain.on('show', () => {
@@ -63,11 +63,21 @@ class MailWindowController {
 
         this.win.webContents.on('did-navigate', (event, url, httpResponseCode, httpStatusText) => {
             if (httpResponseCode >= 400) {
-                const params = new URLSearchParams({ code: httpResponseCode, message: httpStatusText });
-                this.win.loadFile(path.join(__dirname, '../view/error.html'), { query: {
-                    code: httpResponseCode,
-                    message: httpStatusText
-                }});
+                this.win.loadURL('data:text/html;charset=UTF-8,' + encodeURIComponent(`
+                    <!DOCTYPE html>
+                    <html lang="">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Error</title>
+                    </head>
+                    <body>
+                    <center>
+                        <h1 id="error-message">${httpResponseCode} ${httpStatusText}</h1>
+                        <a href="${this.getHomepageUrl()}">Return to home page</a>
+                    </center>
+                    </body>
+                    </html>
+                `));
             }
         });
 
@@ -131,6 +141,10 @@ class MailWindowController {
                 }
             }
         });
+    }
+
+    getHomepageUrl() {
+        return this.config.get("homepageUrl",'https://outlook.live.com/mail');
     }
 
     addUnreadNumberObserver() {
