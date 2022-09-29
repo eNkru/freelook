@@ -27,8 +27,8 @@
     "publish": "build -p always"
   },
   "devDependencies": {
-    "electron": "^15.1.1",
-    "electron-builder": "^22.11.7"
+    "electron": "^19.1.1",
+    "electron-builder": "^22.14.13"
   },
   "dependencies": {
     "electron-spellchecker": "^2.2.1",
