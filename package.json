@@ -20,6 +20,7 @@
     "dist:rpm": "electron-builder --linux rpm",
     "dist:appimage": "electron-builder --linux AppImage",
     "dist:deb": "electron-builder --linux deb",
+    "dist:pacman": "electron-builder --linux pacman",
     "dist:macOS": "electron-builder --mac",
     "dist:win": "electron-builder --win",
     "postinstall": "electron-builder install-app-deps",
@@ -45,7 +46,8 @@
       "target": [
         "AppImage",
         "deb",
-        "rpm"
+        "rpm",
+        "pacman"
       ]
     },
     "win": {
