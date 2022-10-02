@@ -36,9 +36,6 @@
     "electron": "^19.1.1",
     "electron-builder": "^23.3.3"
   },
-  "overrides": {
-    "got": "^12.5.1"
-  },
   "build": {
     "appId": "nz.co.enkru.${name}",
     "linux": {
