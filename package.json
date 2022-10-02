@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "electron": "^19.1.1",
-    "electron-builder": "^22.14.13"
+    "electron-builder": "^23.3.3"
   },
   "dependencies": {
     "electron-spellchecker": "^2.2.1",
@@ -52,6 +52,9 @@
     },
     "win": {
       "target": "msi"
+    },
+    "mac": {
+      "target": "dmg"
     }
   }
 }
