@@ -7,24 +7,24 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-linux:
-  
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [16.x]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run pack
-    - run: npm run dist:linux
+#  build-linux:
+#
+#    runs-on: ubuntu-latest
+#
+#    strategy:
+#      matrix:
+#        node-version: [16.x]
+#
+#    steps:
+#    - uses: actions/checkout@v3
+#    - name: Use Node.js ${{ matrix.node-version }}
+#      uses: actions/setup-node@v3
+#      with:
+#        node-version: ${{ matrix.node-version }}
+#        cache: 'npm'
+#    - run: npm ci
+#    - run: npm run pack
+#    - run: npm run dist:linux
     
   build-macos:
   
@@ -43,23 +43,23 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run pack
-    - run: npm run dist:mac
+    - run: npm run dist:macOS
   
-  build-windows:
-  
-    runs-on: windows-latest
-    
-    strategy:
-      matrix:
-        node-version: [16.x]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run pack
-    - run: npm run dist:win
+#  build-windows:
+#
+#    runs-on: windows-latest
+#
+#    strategy:
+#      matrix:
+#        node-version: [16.x]
+#
+#    steps:
+#    - uses: actions/checkout@v3
+#    - name: Use Node.js ${{ matrix.node-version }}
+#      uses: actions/setup-node@v3
+#      with:
+#        node-version: ${{ matrix.node-version }}
+#        cache: 'npm'
+#    - run: npm ci
+#    - run: npm run pack
+#    - run: npm run dist:win
