@@ -1,6 +1,9 @@
 <img src="build/icons/128x128.png" alt="logo" height="80" align="right" />
 
 # Freelook
+[![Build](https://github.com/eNkru/freelook/actions/workflows/node.js.yml/badge.svg)](https://github.com/eNkru/freelook/actions/workflows/node.js.yml)
+![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
+
 Freelook, an alternative Electron-based desktop app to help you manage Outlook and Office 365.
 
 ## Ask for help

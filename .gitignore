@@ -1,11 +1,10 @@
 /dist/
 /node_modules/
-*.lock
 /npm-debug.log
 /.idea
 *.iml
-/package-lock.json
 .history
 
 # Mac folder file
 *.DS_Store
+/yarn.lock
