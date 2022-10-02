@@ -1,10 +1,16 @@
 <img src="build/icons/128x128.png" alt="logo" height="80" align="right" />
 
 # Freelook
-
 Freelook, an alternative Electron-based desktop app to help you manage Outlook and Office 365.
 
-**This app helps some people like me who couldn't (or don't wish to) install an POP or SMPT mail client to manage their outlook & hotmail emails. Please raise any concern to me if any of the code or resource voilate your copyright or trademark.**
+## Ask for help
+Please raise an PR If you can help me to design an icon for this app (currently the icon is shown on the right top conor of this README)
+If you'd like to help but don't know how to PR, please contact me directly. 
+
+Many Thanks.
+
+## Declamation
+***This app helps some people like me who couldn't (or don't wish to) install an POP or SMPT mail client to manage their outlook & hotmail emails. Please raise any concern to me if any of the code or resource voilate your copyright or trademark.***
 
 ## Feature
 * Receive your hotmail / outlook / office 365 online from the desktop app
