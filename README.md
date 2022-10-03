@@ -39,6 +39,16 @@ The workaround is set some invalid values in the Ads Blocker settings. The setti
 
 Since electron-builder 21 desktop integration is not a part of produced AppImage file anymore. Electron builder recommends [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) to install AppImages and create Desktop Integration or to create the desktop files manually.
 
+If you failed to run `npm install` with following errors
+
+>npm ERR! ../src/keyboard-layout-manager.h:7:10: fatal error: X11/Xlib.h: No such file or directory
+
+>npm ERR! ../src/keyboard-layout-manager-linux.cc:5:10: fatal error: X11/extensions/XKBrules.h: No such file or directory
+
+That means your environment is missing some dev libs for compiling. Install those dev libs will fix the issue.
+
+`sudo apt install libx11-dev libxkbfile-dev` <- For example, if you are on Ubuntu.
+
 ## Build Pre-Request
 * [GIT](https://git-scm.com/)
 * [NPM](https://www.npmjs.com/)
