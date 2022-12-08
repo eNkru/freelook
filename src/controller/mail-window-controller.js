@@ -1,10 +1,16 @@
-const { BrowserWindow, shell, ipcMain, Menu, MenuItem, } = require('electron')
-const CssInjector = require('../js/css-injector')
-const path = require('path')
-const isOnline = require('is-online')
+const { BrowserWindow, shell, ipcMain, Menu, MenuItem, } = require("electron")
+const CssInjector = require("../js/css-injector")
+const path = require("path")
+const isOnline = require("is-online")
 
-const deeplinkUrls = ['outlook.live.com/mail/deeplink', 'outlook.office365.com/mail/deeplink', 'outlook.office.com/mail/deeplink']
-const outlookUrls = ['outlook.live.com', 'outlook.office365.com', 'outlook.office.com']
+const deeplinkUrls = [
+    "outlook.live.com/mail/deeplink",
+    "outlook.office365.com/mail/deeplink",
+    "outlook.office.com/mail/deeplink",
+    "outlook.live.com/calendar/0/deeplink",
+    "outlook.office365.com/calendar/0/deeplink",
+    "outlook.office.com/calendar/0/deeplink",
+]
 
 class MailWindowController {
     constructor(config) {
@@ -15,11 +21,11 @@ class MailWindowController {
 
     init() {
         // Get configurations.
-        const showWindowFrame = this.config.get('showWindowFrame', true)
-        const windowFrameX = this.config.get('windowFrameX', 100)
-        const windowFrameY = this.config.get('windowFrameY', 100)
-        const windowFrameWidth = this.config.get('windowFrameWidth', 1400)
-        const windowFrameHeight = this.config.get('windowFrameHeight', 900)
+        const showWindowFrame = this.config.get("showWindowFrame", true)
+        const windowFrameX = this.config.get("windowFrameX", 100)
+        const windowFrameY = this.config.get("windowFrameY", 100)
+        const windowFrameWidth = this.config.get("windowFrameWidth", 1400)
+        const windowFrameHeight = this.config.get("windowFrameHeight", 900)
 
         // Create the browser window.
         this.win = new BrowserWindow({
@@ -30,12 +36,12 @@ class MailWindowController {
             frame: showWindowFrame,
             autoHideMenuBar: true,
             show: false,
-            icon: path.join(__dirname, '../../assets/outlook_linux_black.png'),
+            icon: path.join(__dirname, "../../assets/outlook_linux_black.png"),
             webPreferences: {
                 enableRemoteModule: true,
                 nodeIntegration: true,
                 spellcheck: true,
-                preload: path.join(__dirname, '../js/preload.js'),
+                preload: path.join(__dirname, "../js/preload.js"),
             }
         })
 
@@ -43,27 +49,27 @@ class MailWindowController {
         this.win.loadURL(this.getHomepageUrl())
 
         // Show window handler
-        ipcMain.on('show', () => {
+        ipcMain.on("show", () => {
             this.show()
         })
 
         // Save the new position of window
-        this.win.on('move', (e) => {
-            var position = this.win.getPosition()
-            this.config.set('windowFrameX', position[0])
-            this.config.set('windowFrameY', position[1])
+        this.win.on("move", () => {
+            const position = this.win.getPosition()
+            this.config.set("windowFrameX", position[0])
+            this.config.set("windowFrameY", position[1])
         })
 
         // Save resized size of window
-        this.win.on('resize', (e) => {
-            var size = this.win.getSize()
-            this.config.set('windowFrameWidth', size[0])
-            this.config.set('windowFrameHeight', size[1])
+        this.win.on("resize", () => {
+            const size = this.win.getSize()
+            this.config.set("windowFrameWidth", size[0])
+            this.config.set("windowFrameHeight", size[1])
         })
 
-        this.win.webContents.on('did-navigate', (event, url, httpResponseCode, httpStatusText) => {
+        this.win.webContents.on("did-navigate", (event, url, httpResponseCode, httpStatusText) => {
             if (httpResponseCode >= 400) {
-                this.win.loadURL('data:text/htmlcharset=UTF-8,' + encodeURIComponent(`
+                this.win.loadURL("data:text/htmlcharset=UTF-8," + encodeURIComponent(`
                     <!DOCTYPE html>
                     <html lang="">
                     <head>
@@ -71,10 +77,10 @@ class MailWindowController {
                         <title>Error</title>
                     </head>
                     <body>
-                    <center>
-                        <h1 id="error-message">${httpResponseCode} ${httpStatusText}</h1>
-                        <a href="${this.getHomepageUrl()}">Return to home page</a>
-                    </center>
+                        <div style="text-align: center;">
+                            <h1 id="error-message">${httpResponseCode} ${httpStatusText}</h1>
+                            <a href="${this.getHomepageUrl()}">Return to home page</a>
+                        </div>
                     </body>
                     </html>
                 `))
@@ -82,7 +88,7 @@ class MailWindowController {
         })
 
         // insert styles
-        this.win.webContents.on('dom-ready', () => {
+        this.win.webContents.on("dom-ready", () => {
             this.win.webContents.insertCSS(CssInjector.main(this.config))
             if (!showWindowFrame) this.win.webContents.insertCSS(CssInjector.noFrame)
 
@@ -92,7 +98,7 @@ class MailWindowController {
         })
 
         // prevent the app quit, hide the window instead.
-        this.win.on('close', (e) => {
+        this.win.on("close", (e) => {
             if (this.win.isVisible()) {
                 e.preventDefault()
                 this.win.hide()
@@ -100,7 +106,7 @@ class MailWindowController {
         })
 
         // Emitted when the window is closed.
-        this.win.on('closed', () => {
+        this.win.on("closed", () => {
             // Dereference the window object, usually you would store windows
             // in an array if your app supports multi windows, this is the time
             // when you should delete the corresponding element.
@@ -108,10 +114,10 @@ class MailWindowController {
         })
 
         // Open the new window in external browser
-        this.win.webContents.on('new-window', this.openInBrowser)
+        this.win.webContents.on("new-window", this.openInBrowser)
 
         // Add context menu for build in spell checker
-        this.win.webContents.on('context-menu', (event, params) => {
+        this.win.webContents.on("context-menu", (event, params) => {
             if (params && params.dictionarySuggestions) {
                 let show = false
                 const menu = new Menu()
@@ -128,7 +134,7 @@ class MailWindowController {
                 if (params.misspelledWord) {
                     menu.append(
                         new MenuItem({
-                            label: 'Add to dictionary',
+                            label: "Add to dictionary",
                             click: () => this.win.webContents.session.addWordToSpellCheckerDictionary(params.misspelledWord)
                         })
                     )
@@ -144,25 +150,25 @@ class MailWindowController {
     }
 
     getHomepageUrl() {
-        return this.config.get("homepageUrl",'https://outlook.live.com/mail')
+        return this.config.get("homepageUrl","https://outlook.live.com/mail")
     }
 
     addUnreadNumberObserver() {
-        this.config.get('unreadMessageClass') && this.win.webContents.executeJavaScript(`
+        this.config.get("unreadMessageClass") && this.win.webContents.executeJavaScript(`
             setTimeout(() => {
-                let unreadSpan = document.querySelector(".${this.config.get('unreadMessageClass')}")
-                require('electron').ipcRenderer.send('updateUnread', unreadSpan.hasChildNodes())
+                let unreadSpan = document.querySelector(".${this.config.get("unreadMessageClass")}")
+                require("electron").ipcRenderer.send("updateUnread", unreadSpan.hasChildNodes())
 
                 let observer = new MutationObserver(mutations => {
                     mutations.forEach(mutation => {
-                        // console.log('Observer Changed.')
-                        require('electron').ipcRenderer.send('updateUnread', unreadSpan.hasChildNodes())
+                        // console.log("Observer Changed.")
+                        require("electron").ipcRenderer.send("updateUnread", unreadSpan.hasChildNodes())
 
                         // Scrape messages and pop up a notification
-                        var messages = document.querySelectorAll('div[role="listbox"][aria-label="Message list"]')
+                        var messages = document.querySelectorAll("div[role="listbox"][aria-label="Message list"]")
                         if (messages.length)
                         {
-                            var unread = messages[0].querySelectorAll('div[aria-label^="Unread"]')
+                            var unread = messages[0].querySelectorAll("div[aria-label^="Unread"]")
                             var body = ""
                             for (var i = 0 i < unread.length i++)
                             {
@@ -179,7 +185,7 @@ class MailWindowController {
                                     icon: "assets/outlook_linux_black.png"
                                 })
                                 notification.onclick = () => {
-                                    require('electron').ipcRenderer.send('show')
+                                    require("electron").ipcRenderer.send("show")
                                 }
                             }
                         }
@@ -196,7 +202,7 @@ class MailWindowController {
                     mutations.forEach(mutation => {
                         if (reminders[0].clientHeight > height)
                         {
-                            require('electron').ipcRenderer.send('show')
+                            require("electron").ipcRenderer.send("show")
                         }
                         height = reminders[0].clientHeight
                     })
@@ -210,26 +216,28 @@ class MailWindowController {
         `)
     }
 
-    toggleWindow() {
-        if (this.win) {
-            if (this.win.isFocused()) {
-                this.win.hide()
-            } else {
-                this.show()
-            }
-        }
-    }
+    // toggleWindow() {
+    //     if (this.win) {
+    //         if (this.win.isFocused()) {
+    //             this.win.hide()
+    //         } else {
+    //             this.show()
+    //         }
+    //     }
+    // }
 
     openInBrowser(e, url) {
-        // console.log(url)
-        if (new RegExp(deeplinkUrls.join('|')).test(url)) {
+        console.log(url)
+        if (new RegExp(deeplinkUrls.join("|")).test(url)) {
             // Default action - if the user wants to open mail in a new window - let them.
+        } else if (url && url.startsWith("https://outlook.live.com/calendar/0/deeplink")) {
+
         }
 
         // Disable the logic to load calendar contact and tasks in the election window.
         // Calendar has no link to back to mail. Once switch the window to calendar no way to back to mail unless close the app.
 
-        // else if (new RegExp(outlookUrls.join('|')).test(url)) {
+        // else if (new RegExp(outlookUrls.join("|")).test(url)) {
         //     // Open calendar, contacts and tasks in the same window
         //     e.preventDefault()
         //     this.loadURL(url)
@@ -256,9 +264,9 @@ class MailWindowController {
                 nodeIntegration: true
             }
         })
-        this.splashWin.loadURL(`file://${path.join(__dirname, '../view/splash.html')}`)
+        this.splashWin.loadURL(`file://${path.join(__dirname, "../view/splash.html")}`)
 
-        ipcMain.on('reconnect', () => {
+        ipcMain.on("reconnect", () => {
             this.connectToMicrosoft()
         })
     }
@@ -269,7 +277,7 @@ class MailWindowController {
                 this.init()
                 this.splashWin.destroy()
             } else {
-                this.splashWin.webContents.send('connect-timeout')
+                this.splashWin.webContents.send("connect-timeout")
             }
         })
     }
