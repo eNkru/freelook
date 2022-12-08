@@ -1,5 +1,5 @@
 const { app, Menu } = require('electron')
-const macOS = process.platform === 'darwin' ? true : false
+const macOS = process.platform === 'darwin'
 
 class MenuController {
     constructor() {
