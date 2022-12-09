@@ -53,6 +53,9 @@ class MailWindowController {
             this.show()
         })
 
+        // Handle the getConfig IPC call
+        ipcMain.on("getConfig", async (event, key, defaultValue) => await this.config.get(key, defaultValue))
+
         // Save the new position of window
         this.win.on("move", () => {
             const position = this.win.getPosition()
