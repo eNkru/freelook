@@ -2,6 +2,11 @@ const { BrowserWindow, shell, ipcMain, Menu, MenuItem, } = require("electron")
 const CssInjector = require("../js/css-injector")
 const path = require("path")
 const isOnline = require("is-online")
+const contextMenu = require('electron-context-menu')
+
+contextMenu({
+    showSaveImageAs: true
+})
 
 const deeplinkUrls = [
     "outlook.live.com/mail/deeplink",
