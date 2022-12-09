@@ -4,53 +4,57 @@
 <head>
     <meta charset="UTF-8">
     <title>Settings</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">
     <link href="../css/setting.css" rel="stylesheet">
 </head>
 
 <body style="height: auto">
-<div class="ui main text container">
-    <div class="ui horizontal divider">
-        <h2 id="setting-header" class="ui header">Manage your settings</h2>
-    </div>
-
+<div class="ui main text container" style="margin-top: 16px;">
     <div id="ads-blocker-segment" class="ui piled segment">
-        <h3 id="ads-blocker-title" class="ui header">
+        <div class="ui orange floating message">
+            <p>restart the app to apply changes</p>
+        </div>
+        <div id="zoom-level-title" class="ui header">
+            <div class="content">
+                Zoom Level
+            </div>
+        </div>
+        <div id="zoom-level-value" class="ui fluid input" style="margin-top: 8px;">
+            <input type="text" aria-label="zoomLevel" placeholder="1.0">
+        </div>
+        <div id="ads-blocker-title" class="ui header">
             <div class="content">
                 Ads Blocker
-                <div class="sub header">restart the app to apply changes</div>
             </div>
-        </h3>
-        <div id="ads-blocker-vertical-title" class="ui horizontal divider">Vertical Ads Class</div>
-        <div id="ads-blocker-vertical-class" class="ui fluid input">
-            <input type="text">
         </div>
-        <div id="ads-blocker-small-title" class="ui horizontal divider">Small Ads Class</div>
-        <div id="ads-blocker-small-class" class="ui fluid input">
-            <input type="text">
+        <div id="ads-blocker-vertical-class" class="ui right labeled fluid input" style="margin-top: 8px;">
+            <input type="text" aria-label="verticalAdsClass">
+            <div class="ui label tag">Vertical Ads Class</div>
         </div>
-        <div id="ads-blocker-premium-title" class="ui horizontal divider">Upgrade Premium Ads Class</div>
-        <div id="ads-blocker-premium-class" class="ui fluid input">
-            <input type="text">
+        <div id="ads-blocker-small-class" class="ui right labeled fluid input" style="margin-top: 8px;">
+            <input type="text" aria-label="smallAdsClass">
+            <div class="ui label tag">Small Ads Class</div>
+        </div>
+        <div id="ads-blocker-premium-class" class="ui right labeled fluid input" style="margin-top: 8px;">
+            <input type="text" aria-label="upgradePremiumClass">
+            <div class="ui label tag">Upgrade Premium Ads Class</div>
         </div>
 
-        <h3 id="unread-message-title" class="ui header">
+        <div id="unread-message-title" class="ui header">
             <div class="content">
                 Unread Message
-                <div class="sub header">restart the app to apply changes</div>
             </div>
-        </h3>
-        <div id="unread-message-class-title" class="ui horizontal divider">Unread Span Class</div>
-        <div id="unread-message-class" class="ui fluid input">
-            <input type="text" placeholder="_3Jn_7Iv4SwMTMOPJiydZLa">
+        </div>
+        <div id="unread-message-class" class="ui right labeled fluid input" style="margin-top: 8px;">
+            <input type="text" placeholder="_3Jn_7Iv4SwMTMOPJiydZLa" aria-label="unreadClass">
+            <div class="ui label tag">Unread Span Class</div>
         </div>
 
-        <h3 id="home-url-title" class="ui header">
+        <div id="home-url-title" class="ui header">
             <div class="content">
                 Home URL
-                <div class="sub header">restart the app to apply changes</div>
             </div>
-        </h3>
+        </div>
 
         <div id="homepageUrl" class="ui floating fluid dropdown labeled search icon button">
             <i class="home icon"></i>
@@ -69,20 +73,23 @@
             </div>
         </div>
 
-        <h3 id="window-size-title" class="ui header">
+        <div id="window-size-title" class="ui header">
             <div class="content">
                 Window Position and Size
             </div>
-        </h3>
+        </div>
         <div class="ui fluid input">
-             <button id="windowReset" type="button">Reset Position and Size</button>
+             <button id="windowReset" class="ui right labeled icon button">
+                 <i class="undo icon"></i>
+                 Reset size and position
+             </button>
         </div>
     </div>
 </div>
 
 <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 <script src="../../resources/jquery-3.4.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
 <script src="../js/setting.js"></script>
 <script>if (window.module) module = window.module;</script>
 </body>

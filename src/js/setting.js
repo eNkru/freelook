@@ -5,6 +5,12 @@ $(() => {
 });
 
 loadSettings = () => {
+    // load zoom level
+    const zoomFactor = ipcRenderer.sendSync("getConfig",'zoomFactor');
+    const $zoomValue = $('#zoom-level-value input');
+    $zoomValue.val(zoomFactor);
+    $zoomValue.change(() => ipcRenderer.send("setConfig",'zoomFactor', $zoomValue.val()));
+
     // load ads blocker setting
     const verticalClass = ipcRenderer.sendSync("getConfig",'verticalAdsClass');
     const $verticalInput = $('#ads-blocker-vertical-class input');
