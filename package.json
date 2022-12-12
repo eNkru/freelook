@@ -31,10 +31,10 @@
     "electron-spellchecker": "^2.2.1",
     "electron-store": "^6.0.1",
     "fs-extra": "^9.0.1",
-    "is-online": "^9.0.0"
+    "is-online": "^10.0.0"
   },
   "devDependencies": {
-    "electron": "^19.1.1",
+    "electron": "^22.0.0",
     "electron-builder": "^23.3.3"
   },
   "build": {
