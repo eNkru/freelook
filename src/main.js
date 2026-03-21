@@ -1,4 +1,5 @@
-const { app } = require('electron')
+const { app, nativeImage } = require('electron')
+const path = require('path')
 const MailWindowController = require('./controller/mail-window-controller')
 const TrayController = require('./controller/tray-controller')
 const MenuController = require('./controller/menu-controller')
@@ -40,9 +41,12 @@ class ElectronOutlook {
     // This method will be called when Electron has finished
     // initialization and is ready to create browser windows.
     // Some APIs can only be used after this event occurs.
-    app.on('ready', () => {
-      this.createControllers()
-    })
+      app.on('ready', () => {
+        if (process.platform === 'darwin') {
+          app.dock.setIcon(nativeImage.createFromPath(path.join(__dirname, '../build/icons/512x512.png')))
+        }
+        this.createControllers()
+      })
 
     // Quit when all windows are closed.
     app.on('window-all-closed', () => {

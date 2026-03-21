@@ -54,7 +54,8 @@
       "target": "msi"
     },
     "mac": {
-      "target": "dmg"
+      "target": "dmg",
+      "icon": "build/icon.icns"
     }
   }
 }
