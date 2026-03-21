@@ -43,8 +43,8 @@ class MailWindowController {
             show: false,
             icon: path.join(__dirname, "../../assets/outlook_linux_black.png"),
             webPreferences: {
-                enableRemoteModule: true,
                 nodeIntegration: true,
+                contextIsolation: false,
                 spellcheck: true,
                 preload: path.join(__dirname, "../js/preload.js"),
             }
@@ -52,6 +52,9 @@ class MailWindowController {
 
         // and load the index.html of the app.
         this.win.loadURL(this.getHomepageUrl())
+
+        // Open DevTools for debugging
+        // this.win.webContents.openDevTools()
 
         // Show window handler
         ipcMain.on("show", () => {
@@ -122,7 +125,9 @@ class MailWindowController {
         })
 
         // Open the new window in external browser
-        this.win.webContents.on("new-window", this.openInBrowser)
+        this.win.webContents.setWindowOpenHandler(({ url }) => {
+            return this.handleWindowOpen(url)
+        })
 
         // Add context menu for build in spell checker
         this.win.webContents.on("context-menu", (event, params) => {
@@ -234,26 +239,19 @@ class MailWindowController {
     //     }
     // }
 
-    openInBrowser(e, url) {
+    handleWindowOpen(url) {
         console.log(url)
         if (new RegExp(deeplinkUrls.join("|")).test(url)) {
-            // Default action - if the user wants to open mail in a new window - let them.
+            // Allow deeplink URLs to open in a new Electron window
+            return { action: 'allow' }
         } else if (url && url.startsWith("https://outlook.live.com/calendar/0/deeplink")) {
-
-        }
-
-        // Disable the logic to load calendar contact and tasks in the election window.
-        // Calendar has no link to back to mail. Once switch the window to calendar no way to back to mail unless close the app.
-
-        // else if (new RegExp(outlookUrls.join("|")).test(url)) {
-        //     // Open calendar, contacts and tasks in the same window
-        //     e.preventDefault()
-        //     this.loadURL(url)
-        // }
-        else {
-            // Send everything else to the browser
-            e.preventDefault()
+            // Disable the logic to load calendar in the Electron window.
+            // Calendar has no link back to mail.
+            return { action: 'deny' }
+        } else {
+            // Send everything else to the external browser
             shell.openExternal(url)
+            return { action: 'deny' }
         }
     }
 
@@ -269,7 +267,8 @@ class MailWindowController {
             frame: false,
             autoHideMenuBar: true,
             webPreferences: {
-                nodeIntegration: true
+                nodeIntegration: true,
+                contextIsolation: false,
             }
         })
         this.splashWin.loadURL(`file://${path.join(__dirname, "../view/splash.html")}`)

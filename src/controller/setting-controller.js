@@ -17,7 +17,6 @@ class SettingsWindow {
             webPreferences: {
                 nodeIntegration: true,
                 contextIsolation: false,
-                enableRemoteModule: true
             }
         });
         this.window.loadURL(`file://${path.join(__dirname, '../view/setting.html')}`);

@@ -21,29 +21,28 @@
     "dist:appimage": "electron-builder --linux AppImage",
     "dist:deb": "electron-builder --linux deb",
     "dist:pacman": "electron-builder --linux pacman",
-    "dist:macOS": "electron-builder --mac",
+    "dist:macOS": "brew install gettext && electron-builder --mac",
     "dist:win": "electron-builder --win",
     "postinstall": "electron-builder install-app-deps",
     "publish": "build -p always"
   },
+  "engines": {
+    "node": ">=24"
+  },
   "dependencies": {
     "electron-context-menu": "^3.6.1",
-    "electron-spellchecker": "^2.2.1",
-    "electron-store": "^6.0.1",
-    "fs-extra": "^9.0.1",
+    "electron-store": "^7.0.3",
+    "fs-extra": "^11.3.4",
     "is-online": "^9.0.0"
   },
   "devDependencies": {
-    "electron": "^19.1.1",
-    "electron-builder": "^23.3.3"
+    "electron": "^41.0.3",
+    "electron-builder": "^25.1.8"
   },
   "build": {
     "appId": "nz.co.enkru.${name}",
     "linux": {
       "category": "Office",
-      "desktop": {
-        "StartupWMClass": "Freelook"
-      },
       "target": [
         "AppImage",
         "deb",
