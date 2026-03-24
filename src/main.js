@@ -9,6 +9,7 @@ const Store = require('electron-store')
 app.commandLine.appendSwitch("auth-server-whitelist", "*");
 app.commandLine.appendSwitch("enable-ntlm-v2", "true");
 
+const appIconPath = path.join(__dirname, '../build/icons/512x512.png')
 
 class ElectronOutlook {
   constructor() {
@@ -43,7 +44,7 @@ class ElectronOutlook {
     // Some APIs can only be used after this event occurs.
       app.on('ready', () => {
         if (process.platform === 'darwin') {
-          app.dock.setIcon(nativeImage.createFromPath(path.join(__dirname, '../build/icons/512x512.png')))
+          app.dock.setIcon(nativeImage.createFromPath(appIconPath))
         }
         this.createControllers()
       })

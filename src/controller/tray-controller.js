@@ -3,6 +3,7 @@ const path = require('path');
 const SettingsController = require('./setting-controller');
 
 const macOS = process.platform === 'darwin';
+const appIconPath = path.join(__dirname, '../../build/icons/512x512.png');
 
 class TrayController {
     constructor(mailController,config) {
@@ -44,8 +45,8 @@ class TrayController {
             trayIcon.setTemplateImage(true);
             return trayIcon
         } else {
-            iconPath = value ? '../../assets/outlook_linux_unread.png' : '../../assets/outlook_linux_black.png';
-            return nativeImage.createFromPath(path.join(__dirname, iconPath))
+            iconPath = value ? path.join(__dirname, '../../assets/outlook_linux_unread.png') : appIconPath;
+            return nativeImage.createFromPath(iconPath)
         }
     }
 

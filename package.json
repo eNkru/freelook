@@ -42,6 +42,7 @@
   "build": {
     "appId": "nz.co.enkru.${name}",
     "linux": {
+      "icon": "build/icons",
       "category": "Office",
       "target": [
         "AppImage",
@@ -51,6 +52,7 @@
       ]
     },
     "win": {
+      "icon": "build/icons/256x256.png",
       "target": "msi"
     },
     "mac": {

@@ -1,12 +1,16 @@
 const { BrowserWindow, shell, ipcMain, Menu, MenuItem, } = require("electron")
 const CssInjector = require("../js/css-injector")
 const path = require("path")
+const { pathToFileURL } = require("url")
 const isOnline = require("is-online")
 const contextMenu = require('electron-context-menu')
 
 contextMenu({
     showSaveImageAs: true
 })
+
+const appIconPath = path.join(__dirname, "../../build/icons/512x512.png")
+const notificationIconUrl = pathToFileURL(appIconPath).toString()
 
 const deeplinkUrls = [
     "outlook.live.com/mail/deeplink",
@@ -41,7 +45,7 @@ class MailWindowController {
             frame: showWindowFrame,
             autoHideMenuBar: true,
             show: false,
-            icon: path.join(__dirname, "../../assets/outlook_linux_black.png"),
+            icon: appIconPath,
             webPreferences: {
                 nodeIntegration: true,
                 contextIsolation: false,
@@ -212,7 +216,7 @@ class MailWindowController {
                             {
                                 var notification = new Notification("Microsoft Outlook - receiving " + unread.length + " NEW mails", {
                                     body: body,
-                                    icon: "assets/outlook_linux_black.png"
+                                    icon: "${notificationIconUrl}"
                                 })
                                 notification.onclick = () => {
                                     require("electron").ipcRenderer.send("show")
