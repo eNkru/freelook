@@ -48,4 +48,9 @@ loadSettings = () => {
     $windowReset.click(() => {
         ipcRenderer.send("resetWindowFrame");
     });
+
+    // Save & Restart
+    $('#saveRestart').click(() => {
+        ipcRenderer.send("restartApp");
+    });
 };

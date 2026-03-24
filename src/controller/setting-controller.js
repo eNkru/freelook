@@ -50,6 +50,14 @@ class SettingsWindow {
                 this.config.delete(key);
             });
         }
+
+        if (!ipcMain.listenerCount("restartApp")) {
+            ipcMain.on("restartApp", () => {
+                const { app } = require('electron');
+                app.relaunch();
+                app.exit(0);
+            });
+        }
     }
 
     show() {
