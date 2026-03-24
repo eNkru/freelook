@@ -114,6 +114,12 @@ class MailWindowController {
             this.win.webContents.insertCSS(CssInjector.main(this.config))
             if (!showWindowFrame) this.win.webContents.insertCSS(CssInjector.noFrame)
 
+            // Apply zoom factor
+            const zoomFactor = parseFloat(this.config.get("zoomFactor", 1.0))
+            if (!isNaN(zoomFactor) && zoomFactor > 0) {
+                this.win.webContents.setZoomFactor(zoomFactor)
+            }
+
             this.addUnreadNumberObserver()
 
             this.win.show()
