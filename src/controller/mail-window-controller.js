@@ -61,11 +61,13 @@ class MailWindowController {
             this.show()
         })
 
-        // Handle the getConfig IPC call
-        ipcMain.on("getConfig", async (event, key, defaultValue) => await this.config.get(key, defaultValue))
+        // getConfig is handled by SettingsWindow controller
+
+        this._pauseFrameSave = false;
 
         // Save the new position of window
         this.win.on("move", () => {
+            if (this._pauseFrameSave) return;
             const position = this.win.getPosition()
             this.config.set("windowFrameX", position[0])
             this.config.set("windowFrameY", position[1])
@@ -73,9 +75,18 @@ class MailWindowController {
 
         // Save resized size of window
         this.win.on("resize", () => {
+            if (this._pauseFrameSave) return;
             const size = this.win.getSize()
             this.config.set("windowFrameWidth", size[0])
             this.config.set("windowFrameHeight", size[1])
+        })
+
+        // Reset window position and size to defaults
+        ipcMain.on("resetWindowFrame", () => {
+            this._pauseFrameSave = true;
+            this.win.setSize(1400, 900);
+            this.win.center();
+            this._pauseFrameSave = false;
         })
 
         this.win.webContents.on("did-navigate", (event, url, httpResponseCode, httpStatusText) => {

@@ -27,21 +27,29 @@ class SettingsWindow {
             }
         });
 
-        ipcMain.on("getConfig", (event, key, defaultValue) => {
-            event.returnValue = this.config.get(key, defaultValue);
-        });
+        if (!ipcMain.listenerCount("getConfig")) {
+            ipcMain.on("getConfig", (event, key, defaultValue) => {
+                event.returnValue = this.config.get(key, defaultValue);
+            });
+        }
 
-        ipcMain.on("getConfigs", (event) => {
-            event.returnValue = this.config.store;
-        });
+        if (!ipcMain.listenerCount("getConfigs")) {
+            ipcMain.on("getConfigs", (event) => {
+                event.returnValue = this.config.store;
+            });
+        }
 
-        ipcMain.on("setConfig", (event, key, value) => {
-            this.config.set(key, value);
-        });
+        if (!ipcMain.listenerCount("setConfig")) {
+            ipcMain.on("setConfig", (event, key, value) => {
+                this.config.set(key, value);
+            });
+        }
 
-        ipcMain.on("deleteConfig", (event, key) => {
-            this.config.delete(key);
-        });
+        if (!ipcMain.listenerCount("deleteConfig")) {
+            ipcMain.on("deleteConfig", (event, key) => {
+                this.config.delete(key);
+            });
+        }
     }
 
     show() {
