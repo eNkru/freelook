@@ -1,10 +1,21 @@
-/dist/
+# Tauri
+/src-tauri/target/
+/src-tauri/gen/
+
+# Node
 /node_modules/
 /npm-debug.log
+/yarn.lock
+
+# IDE
 /.idea
+/.kilo/
+/.kiro/
 *.iml
 .history
 
 # Mac folder file
 *.DS_Store
-/yarn.lock
+
+# TypeScript compiled output
+/src/js-compiled/

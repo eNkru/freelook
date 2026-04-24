@@ -1,9 +1,10 @@
-// Splash screen - Tauri version
+// Splash screen TypeScript - Tauri version
+export {};
 const { invoke } = window.__TAURI__.core;
 const { listen } = window.__TAURI__.event;
 
-const splashIcon = document.getElementById('splashIcon');
-const splashBtn = document.getElementById('splashBtn');
+const splashIcon = document.getElementById('splashIcon') as HTMLElement;
+const splashBtn = document.getElementById('splashBtn') as HTMLButtonElement;
 
 async function checkConnection() {
     splashIcon.className = 'loading microsoft icon massive';
@@ -11,10 +12,11 @@ async function checkConnection() {
     splashBtn.disabled = true;
 
     try {
-        const online = await invoke('check_network');
+        const online = await invoke<boolean>('check_network');
         if (online) {
             splashIcon.className = 'checkmark microsoft icon massive';
             splashBtn.textContent = 'Connected! Loading...';
+            // Main window will be shown by Rust backend
         } else {
             showDisconnected();
         }
@@ -35,7 +37,7 @@ splashBtn.addEventListener('click', async () => {
     splashBtn.disabled = true;
 
     try {
-        const online = await invoke('reconnect_and_launch');
+        const online = await invoke<boolean>('reconnect_and_launch');
         if (online) {
             splashIcon.className = 'checkmark microsoft icon massive';
             splashBtn.textContent = 'Connected! Loading...';

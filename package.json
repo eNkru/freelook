@@ -1,63 +1,31 @@
 {
-  "name": "electron-outlook",
+  "name": "freelook",
   "productName": "Freelook",
   "version": "1.0.1",
-  "description": "Outlook Electron desktop application",
-  "main": "src/main.js",
+  "description": "Outlook desktop application powered by Tauri",
   "author": "Howard Ju <howard.ju@outlook.com>",
   "repository": "https://github.com/eNkru/freelook",
   "license": "MIT",
   "keywords": [
-    "Electron",
+    "Tauri",
     "Outlook",
     "Microsoft",
     "Outlook Desktop"
   ],
   "scripts": {
-    "start": "electron src/main.js",
-    "pack": "electron-builder --dir",
-    "dist:linux": "electron-builder --linux",
-    "dist:rpm": "electron-builder --linux rpm",
-    "dist:appimage": "electron-builder --linux AppImage",
-    "dist:deb": "electron-builder --linux deb",
-    "dist:pacman": "electron-builder --linux pacman",
-    "dist:macOS": "brew install gettext && electron-builder --mac",
-    "dist:win": "electron-builder --win",
-    "postinstall": "electron-builder install-app-deps",
-    "publish": "build -p always"
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "build:ts": "tsc"
   },
   "engines": {
     "node": ">=24"
   },
   "dependencies": {
-    "electron-context-menu": "^3.6.1",
-    "electron-store": "^7.0.3",
-    "fs-extra": "^11.3.4",
-    "is-online": "^9.0.0"
+    "@tauri-apps/api": "^2.0.0"
   },
   "devDependencies": {
-    "electron": "^41.0.3",
-    "electron-builder": "^25.1.8"
-  },
-  "build": {
-    "appId": "nz.co.enkru.${name}",
-    "linux": {
-      "icon": "build/icons",
-      "category": "Office",
-      "target": [
-        "AppImage",
-        "deb",
-        "rpm",
-        "pacman"
-      ]
-    },
-    "win": {
-      "icon": "build/icons/256x256.png",
-      "target": "msi"
-    },
-    "mac": {
-      "target": "dmg",
-      "icon": "build/icon.icns"
-    }
+    "@tauri-apps/cli": "^2.0.0",
+    "typescript": "^5.0.0"
   }
 }

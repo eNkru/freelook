@@ -1,56 +1,68 @@
-const { ipcRenderer } = require('electron');
+// Settings page - Tauri version (no jQuery, no Semantic UI)
+const { invoke } = window.__TAURI__.core;
 
-$(() => {
-    loadSettings();
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        await loadSettings();
+    } catch (err) {
+        console.error("Failed to load settings:", err);
+    }
+
+    setupListeners();
 });
 
-loadSettings = () => {
-    // load zoom level
-    const zoomFactor = ipcRenderer.sendSync("getConfig",'zoomFactor');
-    const $zoomValue = $('#zoom-level-value input');
-    $zoomValue.val(zoomFactor);
-    $zoomValue.change(() => ipcRenderer.send("setConfig",'zoomFactor', $zoomValue.val()));
+async function loadSettings() {
+    const zoomLevel = document.getElementById("zoomLevel");
+    const verticalAds = document.getElementById("verticalAdsClass");
+    const smallAds = document.getElementById("smallAdsClass");
+    const premiumAds = document.getElementById("premiumAdsClass");
+    const unreadClass = document.getElementById("unreadClass");
+    const homepageUrl = document.getElementById("homepageUrl");
 
-    // load ads blocker setting
-    const verticalClass = ipcRenderer.sendSync("getConfig",'verticalAdsClass');
-    const $verticalInput = $('#ads-blocker-vertical-class input');
-    $verticalInput.val(verticalClass);
-    $verticalInput.change(() => ipcRenderer.send("setConfig",'verticalAdsClass', $verticalInput.val()));
+    zoomLevel.value = await invoke("get_config", { key: "zoomFactor", default: "1.0" });
+    verticalAds.value = await invoke("get_config", { key: "verticalAdsClass", default: "pBKjV" });
+    smallAds.value = await invoke("get_config", { key: "smallAdsClass", default: "X1Kvq" });
+    premiumAds.value = await invoke("get_config", { key: "premiumAdsClass", default: "VPtFl" });
+    unreadClass.value = await invoke("get_config", { key: "unreadMessageClass", default: "" });
+    homepageUrl.value = await invoke("get_config", { key: "homepageUrl", default: "https://outlook.live.com/mail" });
+}
 
-    const smallClass = ipcRenderer.sendSync("getConfig",'smallAdsClass');
-    const $smallInput = $('#ads-blocker-small-class input');
-    $smallInput.val(smallClass);
-    $smallInput.change(() => ipcRenderer.send("setConfig",'smallAdsClass', $smallInput.val()));
+function setupListeners() {
+    // Persist on change
+    bindChange("zoomLevel", "zoomFactor");
+    bindChange("verticalAdsClass", "verticalAdsClass");
+    bindChange("smallAdsClass", "smallAdsClass");
+    bindChange("premiumAdsClass", "premiumAdsClass");
+    bindChange("unreadClass", "unreadMessageClass");
+    bindChange("homepageUrl", "homepageUrl");
 
-    const premiumClass = ipcRenderer.sendSync("getConfig",'premiumAdsClass');
-    const $premiumInput = $('#ads-blocker-premium-class input');
-    $premiumInput.val(premiumClass);
-    $premiumInput.change(() => ipcRenderer.send("setConfig",'premiumAdsClass', $premiumInput.val()));
-
-    // load unread message setting
-    const unreadMsgClass = ipcRenderer.sendSync("getConfig",'unreadMessageClass');
-    const unreadMsgInput = $('#unread-message-class input');
-    unreadMsgInput.val(unreadMsgClass);
-    unreadMsgInput.change(() => ipcRenderer.send("setConfig",'unreadMessageClass', unreadMsgInput.val()));
-
-    // load home url setting
-    const homepageUrl = ipcRenderer.sendSync("getConfig",'homepageUrl','https://outlook.live.com/mail');
-    let $homepageUrl = $('#homepageUrl');
-    $homepageUrl.dropdown('set selected', homepageUrl);
-    $homepageUrl.dropdown({
-        onChange: (value) => {
-            ipcRenderer.send("setConfig",'homepageUrl', value);
+    // Window reset
+    document.getElementById("windowReset").addEventListener("click", async () => {
+        try {
+            await invoke("reset_window_frame");
+        } catch (err) {
+            console.error("Failed to reset window:", err);
         }
     });
 
-    // Window position and size handling
-    let $windowReset = $('#windowReset');
-    $windowReset.click(() => {
-        ipcRenderer.send("resetWindowFrame");
-    });
-
     // Save & Restart
-    $('#saveRestart').click(() => {
-        ipcRenderer.send("restartApp");
+    document.getElementById("saveRestart").addEventListener("click", async () => {
+        try {
+            await invoke("restart_app");
+        } catch (err) {
+            console.error("Failed to restart:", err);
+        }
     });
-};
+}
+
+function bindChange(elementId, configKey) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    el.addEventListener("change", async () => {
+        try {
+            await invoke("set_config", { key: configKey, value: el.value });
+        } catch (err) {
+            console.error(`Failed to save ${configKey}:`, err);
+        }
+    });
+}
