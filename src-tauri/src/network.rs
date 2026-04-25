@@ -13,7 +13,7 @@ async fn do_check_network() -> bool {
     };
 
     match timeout(
-        Duration::from_secs(15),
+        Duration::from_secs(5),
         client.head("https://outlook.live.com").send(),
     )
     .await

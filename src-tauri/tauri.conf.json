@@ -19,10 +19,6 @@
         "url": "view/splash.html"
       }
     ],
-    "trayIcon": {
-      "iconPath": "icons/512x512.png",
-      "iconAsTemplate": true
-    },
     "security": {
       "csp": null
     }

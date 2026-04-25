@@ -14,7 +14,8 @@ pub fn get_config(app: AppHandle, key: String, default: Option<String>) -> Resul
 
 #[tauri::command]
 pub fn set_config(app: AppHandle, key: String, value: String) -> Result<(), String> {
-    config::set_config(app, key, value)
+    config::set_config(app.clone(), key, value)?;
+    windows::apply_main_settings(&app)
 }
 
 #[tauri::command]
@@ -53,11 +54,7 @@ pub async fn reconnect_and_launch(app: AppHandle) -> Result<bool, String> {
             main_window.on_window_event(move |event| {
                 if let tauri::WindowEvent::Focused(focused) = event {
                     if *focused {
-                        let css = windows::get_main_css(&app_handle);
-                        let _ = main_win_clone.eval(&format!(
-                            "document.head.insertAdjacentHTML('beforeend', `<style>{}</style>`)",
-                            css
-                        ));
+                        let _ = windows::apply_main_settings(&app_handle);
                         let unread_js = windows::get_unread_js(&app_handle);
                         if !unread_js.is_empty() {
                             let _ = main_win_clone.eval(&unread_js);
@@ -68,6 +65,7 @@ pub async fn reconnect_and_launch(app: AppHandle) -> Result<bool, String> {
             let _ = main_window.show();
             let _ = main_window.set_focus();
         }
+        let _ = windows::apply_main_settings(&app);
 
         // Close splash window
         if let Some(splash) = app.get_webview_window("splash") {

@@ -16,12 +16,7 @@ fn setup_main_window(app: &tauri::AppHandle) {
         main_window.on_window_event(move |event| {
             if let tauri::WindowEvent::Focused(focused) = event {
                 if *focused {
-                    // Inject CSS on focus
-                    let css = windows::get_main_css(&app_handle);
-                    let _ = main_win_clone.eval(&format!(
-                        "document.head.insertAdjacentHTML('beforeend', `<style>{}</style>`)",
-                        css
-                    ));
+                    let _ = windows::apply_main_settings(&app_handle);
 
                     // Inject unread observer JS
                     let unread_js = windows::get_unread_js(&app_handle);
@@ -75,19 +70,16 @@ pub fn run() {
             let menu = menu::create_menu(&app_handle).expect("Failed to create menu");
             app.set_menu(menu).expect("Failed to set menu");
 
-            // Perform initial network check and manage splash/main window transition
+            // Start loading Outlook immediately. Network probing only controls the splash fallback.
             let app_handle2 = app.handle().clone();
-            tauri::async_runtime::spawn(async move {
-                // Small delay to let splash render
-                tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
+            let _ = windows::create_main_window(&app_handle2);
+            setup_main_window(&app_handle2);
+            let _ = windows::apply_main_settings(&app_handle2);
 
+            tauri::async_runtime::spawn(async move {
                 let online = network::check_network().await.unwrap_or(false);
 
                 if online {
-                    // Create main window and destroy splash
-                    let _ = windows::create_main_window(&app_handle2);
-                    setup_main_window(&app_handle2);
-
                     // Destroy splash window
                     if let Some(splash) = app_handle2.get_webview_window("splash") {
                         let _ = splash.close();

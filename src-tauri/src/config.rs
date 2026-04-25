@@ -19,11 +19,7 @@ fn defaults() -> HashMap<&'static str, &'static str> {
     m
 }
 
-pub fn get_config(
-    app: AppHandle,
-    key: String,
-    default: Option<String>,
-) -> Result<String, String> {
+pub fn get_config(app: AppHandle, key: String, default: Option<String>) -> Result<String, String> {
     let store = tauri_plugin_store::StoreBuilder::new(&app, "Settings")
         .build()
         .map_err(|e| e.to_string())?;
@@ -46,24 +42,16 @@ pub fn get_config(
     }
 }
 
-pub fn set_config(
-    app: AppHandle,
-    key: String,
-    value: String,
-) -> Result<(), String> {
+pub fn set_config(app: AppHandle, key: String, value: String) -> Result<(), String> {
     let store = tauri_plugin_store::StoreBuilder::new(&app, "Settings")
         .build()
         .map_err(|e| e.to_string())?;
 
-    store
-        .set(key, Value::String(value));
+    store.set(key, Value::String(value));
     store.save().map_err(|e| e.to_string())
 }
 
-pub fn delete_config(
-    app: AppHandle,
-    key: String,
-) -> Result<(), String> {
+pub fn delete_config(app: AppHandle, key: String) -> Result<(), String> {
     let store = tauri_plugin_store::StoreBuilder::new(&app, "Settings")
         .build()
         .map_err(|e| e.to_string())?;
@@ -72,9 +60,7 @@ pub fn delete_config(
     store.save().map_err(|e| e.to_string())
 }
 
-pub fn get_configs(
-    app: AppHandle,
-) -> Result<Value, String> {
+pub fn get_configs(app: AppHandle) -> Result<Value, String> {
     let store = tauri_plugin_store::StoreBuilder::new(&app, "Settings")
         .build()
         .map_err(|e| e.to_string())?;

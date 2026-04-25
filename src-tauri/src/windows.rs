@@ -1,4 +1,4 @@
-use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{webview::PageLoadEvent, AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 #[allow(dead_code)]
 const DEEPLINK_URLS: &[&str] = &[
@@ -44,7 +44,10 @@ fn get_config_string(app: &AppHandle, key: &str, default: &str) -> String {
 #[allow(dead_code)]
 fn set_config_value(app: &AppHandle, key: &str, value: &str) {
     if let Ok(store) = tauri_plugin_store::StoreBuilder::new(app, "Settings").build() {
-        store.set(key.to_string(), serde_json::Value::String(value.to_string()));
+        store.set(
+            key.to_string(),
+            serde_json::Value::String(value.to_string()),
+        );
         let _ = store.save();
     }
 }
@@ -52,21 +55,74 @@ fn set_config_value(app: &AppHandle, key: &str, value: &str) {
 /// Create and show the main (mail) window
 pub fn create_main_window(app: &AppHandle) -> Result<(), String> {
     // Read config values
-    let x: f64 = get_config_string(app, "windowFrameX", "100").parse().unwrap_or(100.0);
-    let y: f64 = get_config_string(app, "windowFrameY", "100").parse().unwrap_or(100.0);
-    let width: f64 = get_config_string(app, "windowFrameWidth", "1400").parse().unwrap_or(1400.0);
-    let height: f64 = get_config_string(app, "windowFrameHeight", "900").parse().unwrap_or(900.0);
+    let x: f64 = get_config_string(app, "windowFrameX", "100")
+        .parse()
+        .unwrap_or(100.0);
+    let y: f64 = get_config_string(app, "windowFrameY", "100")
+        .parse()
+        .unwrap_or(100.0);
+    let width: f64 = get_config_string(app, "windowFrameWidth", "1400")
+        .parse()
+        .unwrap_or(1400.0);
+    let height: f64 = get_config_string(app, "windowFrameHeight", "900")
+        .parse()
+        .unwrap_or(900.0);
     let homepage_url = get_homepage_url(app);
+    let app_handle = app.clone();
 
-    let _window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(homepage_url.parse().unwrap()))
-        .title("Freelook")
-        .inner_size(width, height)
-        .position(x, y)
-        .visible(false)
-        .build()
-        .map_err(|e| e.to_string())?;
+    let _window = WebviewWindowBuilder::new(
+        app,
+        "main",
+        WebviewUrl::External(homepage_url.parse().unwrap()),
+    )
+    .title("Freelook")
+    .inner_size(width, height)
+    .position(x, y)
+    .visible(false)
+    .on_page_load(move |_window, payload| {
+        if payload.event() == PageLoadEvent::Finished {
+            let _ = apply_main_settings(&app_handle);
+        }
+    })
+    .build()
+    .map_err(|e| e.to_string())?;
 
     Ok(())
+}
+
+pub fn apply_main_settings(app: &AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        let zoom = get_config_string(app, "zoomFactor", "1.0")
+            .parse::<f64>()
+            .unwrap_or(1.0);
+        window.set_zoom(zoom).map_err(|e| e.to_string())?;
+
+        inject_main_css(&window, &get_main_css(app))?;
+    }
+    Ok(())
+}
+
+fn inject_main_css(window: &tauri::WebviewWindow, css: &str) -> Result<(), String> {
+    let escaped_css = css
+        .replace('\\', "\\\\")
+        .replace('`', "\\`")
+        .replace('$', "\\$");
+    let js = format!(
+        r#"
+        (() => {{
+            const id = "freelook-main-css";
+            let style = document.getElementById(id);
+            if (!style) {{
+                style = document.createElement("style");
+                style.id = id;
+                document.head.appendChild(style);
+            }}
+            style.textContent = `{}`;
+        }})();
+        "#,
+        escaped_css
+    );
+    window.eval(&js).map_err(|e| e.to_string())
 }
 
 /// Show the main window
@@ -81,7 +137,9 @@ pub fn show_main_window(app: AppHandle) -> Result<(), String> {
 /// Reset window frame to defaults
 pub fn reset_window_frame(app: AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("main") {
-        window.set_size(tauri::LogicalSize::new(1400.0, 900.0)).map_err(|e| e.to_string())?;
+        window
+            .set_size(tauri::LogicalSize::new(1400.0, 900.0))
+            .map_err(|e| e.to_string())?;
         window.center().map_err(|e| e.to_string())?;
     }
     Ok(())
@@ -119,7 +177,10 @@ pub fn restart_app(app: AppHandle) -> Result<(), String> {
 /// Inject CSS into a webview
 pub fn css_inject(app: AppHandle, webview_label: String, css: String) -> Result<(), String> {
     if let Some(window) = app.get_webview_window(&webview_label) {
-        let escaped_css = css.replace('\\', "\\\\").replace('`', "\\`").replace('$', "\\$");
+        let escaped_css = css
+            .replace('\\', "\\\\")
+            .replace('`', "\\`")
+            .replace('$', "\\$");
         let js = format!(
             "document.head.insertAdjacentHTML('beforeend', `<style>{}</style>`)",
             escaped_css
