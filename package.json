@@ -16,7 +16,9 @@
     "tauri": "tauri",
     "dev": "tauri dev",
     "build": "tauri build",
-    "build:ts": "tsc"
+    "build:ts": "tsc",
+    "clean": "rm -rf src-tauri/target src-tauri/gen node_modules src/js-compiled dist build out release debug coverage tmp temp .cache .turbo .parcel-cache .next .nuxt .svelte-kit && find . -name .DS_Store -delete 2>/dev/null || true",
+    "clean:full": "npm run clean && npm install && npm run build:ts"
   },
   "engines": {
     "node": ">=24"
