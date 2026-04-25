@@ -1276,7 +1276,7 @@ dependencies = [
 
 [[package]]
 name = "freelook"
-version = "1.0.1"
+version = "2.0.0"
 dependencies = [
  "image",
  "reqwest 0.12.28",
