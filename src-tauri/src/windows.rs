@@ -263,7 +263,7 @@ pub fn get_unread_js(app: &AppHandle) -> String {
                     }}
                     if (unread.length) {{
                         window.__TAURI__.notification.sendNotification({{
-                            title: "Microsoft Outlook - receiving " + unread.length + " NEW mails",
+                            title: "Freelook - receiving " + unread.length + " NEW mails",
                             body: body,
                         }});
                     }}

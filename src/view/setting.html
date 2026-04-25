@@ -3,65 +3,165 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Settings</title>
     <link href="../css/setting.css" rel="stylesheet">
 </head>
 
 <body>
-<div class="container">
-    <div class="notice">
-        Restart the app to apply changes
-    </div>
+<main class="settings-page">
+    <header class="page-header">
+        <div class="page-header-copy">
+            <p class="page-eyebrow">Freelook Preferences</p>
+            <h1>Settings</h1>
+            <p class="page-description">
+                Manage display, navigation, and cleanup behavior for your Freelook desktop experience.
+            </p>
+        </div>
 
-    <section>
-        <h2>Zoom Level</h2>
-        <input type="number" id="zoomLevel" min="0.5" max="3.0" step="0.1" value="1.0">
+        <aside class="status-panel">
+            <p class="status-label">Status</p>
+            <strong id="statusBadge" class="status-badge status-idle">Ready</strong>
+            <p id="statusMessage" class="status-text">Changes are saved automatically. Restart to apply everything cleanly.</p>
+            <div class="zoom-chip">
+                <span class="zoom-chip-label">Zoom preview</span>
+                <strong id="zoomPreview">100%</strong>
+            </div>
+        </aside>
+    </header>
+
+    <section class="settings-card info-card">
+        <p class="card-title">Apply changes cleanly</p>
+        <p class="card-text">
+            Every field saves on change. Restart the app when you want the full shell to refresh with the latest values.
+        </p>
     </section>
 
-    <section>
-        <h2>Ads Blocker</h2>
-        <div class="field">
-            <input type="text" id="verticalAdsClass">
-            <span class="tag">Vertical Ads Class</span>
+    <section class="settings-card">
+        <div class="section-header">
+            <div>
+                <p class="section-label">Display</p>
+                <h2>Interface scale</h2>
+            </div>
+            <p class="section-description">Adjust the UI scale for readability and screen density.</p>
         </div>
-        <div class="field">
-            <input type="text" id="smallAdsClass">
-            <span class="tag">Small Ads Class</span>
+
+        <label class="setting-item" for="zoomLevel">
+            <span class="setting-copy">
+                <span class="setting-name">Zoom level</span>
+                <span class="setting-help">Accepted range is 0.5x to 3.0x in 0.1 increments.</span>
+            </span>
+            <div class="input-with-suffix">
+                <input type="number" id="zoomLevel" min="0.5" max="3.0" step="0.1" value="1.0">
+                <span class="input-suffix">x</span>
+            </div>
+        </label>
+    </section>
+
+    <section class="settings-card">
+        <div class="section-header">
+            <div>
+                <p class="section-label">Cleanup</p>
+                <h2>Ad blocker selectors</h2>
+            </div>
+            <p class="section-description">Configure the CSS classes used to hide ad and upsell areas.</p>
         </div>
-        <div class="field">
-            <input type="text" id="premiumAdsClass">
-            <span class="tag">Upgrade Premium Ads Class</span>
+
+        <div class="settings-list">
+            <label class="setting-item" for="verticalAdsClass">
+                <span class="setting-copy">
+                    <span class="setting-name">Vertical ads class</span>
+                    <span class="setting-help">Targets the sidebar ad container.</span>
+                </span>
+                <input type="text" id="verticalAdsClass" autocomplete="off">
+            </label>
+
+            <label class="setting-item" for="smallAdsClass">
+                <span class="setting-copy">
+                    <span class="setting-name">Small ads class</span>
+                    <span class="setting-help">Targets compact promo or inline ad blocks.</span>
+                </span>
+                <input type="text" id="smallAdsClass" autocomplete="off">
+            </label>
+
+            <label class="setting-item" for="premiumAdsClass">
+                <span class="setting-copy">
+                    <span class="setting-name">Premium upgrade class</span>
+                    <span class="setting-help">Targets banners that ask users to upgrade.</span>
+                </span>
+                <input type="text" id="premiumAdsClass" autocomplete="off">
+            </label>
         </div>
     </section>
 
-    <section>
-        <h2>Unread Message</h2>
-        <div class="field">
-            <input type="text" id="unreadClass" placeholder="_3Jn_7Iv4SwMTMOPJiydZLa">
-            <span class="tag">Unread Span Class</span>
+    <section class="settings-card">
+        <div class="section-header">
+            <div>
+                <p class="section-label">Mailbox</p>
+                <h2>Unread message marker</h2>
+            </div>
+            <p class="section-description">Identify the class used by unread indicators in the message list.</p>
+        </div>
+
+        <label class="setting-item" for="unreadClass">
+            <span class="setting-copy">
+                <span class="setting-name">Unread span class</span>
+                <span class="setting-help">Leave blank if custom unread detection is not needed.</span>
+            </span>
+            <input type="text" id="unreadClass" placeholder="_3Jn_7Iv4SwMTMOPJiydZLa" autocomplete="off">
+        </label>
+    </section>
+
+    <section class="settings-card">
+        <div class="section-header">
+            <div>
+                <p class="section-label">Navigation</p>
+                <h2>Default landing page</h2>
+            </div>
+            <p class="section-description">Choose which Freelook endpoint opens when the app starts.</p>
+        </div>
+
+        <label class="setting-item" for="homepageUrl">
+            <span class="setting-copy">
+                <span class="setting-name">Home URL</span>
+                <span class="setting-help">Switch between personal and work Freelook endpoints.</span>
+            </span>
+            <div class="select-wrapper">
+                <select id="homepageUrl">
+                    <option value="" disabled>Select URL</option>
+                    <option value="https://outlook.live.com/mail">https://outlook.live.com/mail</option>
+                    <option value="https://outlook.office.com/mail">https://outlook.office.com/mail</option>
+                </select>
+            </div>
+        </label>
+    </section>
+
+    <section class="settings-card">
+        <div class="section-header">
+            <div>
+                <p class="section-label">Window</p>
+                <h2>Position and frame</h2>
+            </div>
+            <p class="section-description">Restore the app shell if the window size or position feels off.</p>
+        </div>
+
+        <div class="action-row">
+            <div class="setting-copy">
+                <span class="setting-name">Reset window size and position</span>
+                <span class="setting-help">Useful after monitor changes, DPI shifts, or accidental resizing.</span>
+            </div>
+            <button id="windowReset" class="btn btn-secondary" type="button">Reset window</button>
         </div>
     </section>
 
-    <section>
-        <h2>Home URL</h2>
-        <div class="select-wrapper">
-            <select id="homepageUrl">
-                <option value="" disabled>Select URL</option>
-                <option value="https://outlook.live.com/mail">https://outlook.live.com/mail</option>
-                <option value="https://outlook.office.com/mail">https://outlook.office.com/mail</option>
-            </select>
+    <footer class="footer-bar">
+        <div>
+            <p class="footer-title">Autosave is on</p>
+            <p class="footer-text">Restart the app whenever you are ready to apply the latest settings.</p>
         </div>
-    </section>
-
-    <section>
-        <h2>Window Position and Size</h2>
-        <button id="windowReset" class="btn btn-secondary">Reset size and position</button>
-    </section>
-
-    <hr>
-
-    <button id="saveRestart" class="btn btn-primary">Save &amp; Restart</button>
-</div>
+        <button id="saveRestart" class="btn btn-primary" type="button">Save &amp; Restart</button>
+    </footer>
+</main>
 
 <script type="module" src="../js/setting.js"></script>
 </body>

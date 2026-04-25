@@ -7,6 +7,24 @@
 /npm-debug.log
 /yarn.lock
 
+# Build output
+/dist/
+/build/
+/out/
+/release/
+/debug/
+/coverage/
+
+# Temp and cache
+/tmp/
+/temp/
+/.cache/
+/.turbo/
+/.parcel-cache/
+/.next/
+/.nuxt/
+/.svelte-kit/
+
 # IDE
 /.idea
 /.kilo/
