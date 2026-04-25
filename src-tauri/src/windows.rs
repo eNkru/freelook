@@ -1,3 +1,5 @@
+use std::sync::Mutex;
+use std::time::Instant;
 use tauri::{webview::PageLoadEvent, AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 #[allow(dead_code)]
@@ -41,8 +43,7 @@ fn get_config_string(app: &AppHandle, key: &str, default: &str) -> String {
 }
 
 /// Set config value
-#[allow(dead_code)]
-fn set_config_value(app: &AppHandle, key: &str, value: &str) {
+pub fn set_config_value(app: &AppHandle, key: &str, value: &str) {
     if let Ok(store) = tauri_plugin_store::StoreBuilder::new(app, "Settings").build() {
         store.set(
             key.to_string(),
@@ -50,6 +51,45 @@ fn set_config_value(app: &AppHandle, key: &str, value: &str) {
         );
         let _ = store.save();
     }
+}
+
+static LAST_FRAME_SAVE: Mutex<Option<Instant>> = Mutex::new(None);
+
+/// Save the main window's current position and size to config (debounced to 500ms).
+pub fn save_window_frame(app: &AppHandle) {
+    let now = Instant::now();
+    if let Ok(mut last) = LAST_FRAME_SAVE.lock() {
+        if let Some(prev) = *last {
+            if now.duration_since(prev).as_millis() < 500 {
+                return;
+            }
+        }
+        *last = Some(now);
+    }
+
+    if let Some(window) = app.get_webview_window("main") {
+        let scale = window.scale_factor().unwrap_or(1.0);
+        if let Ok(pos) = window.outer_position() {
+            let x = pos.x as f64 / scale;
+            let y = pos.y as f64 / scale;
+            set_config_value(app, "windowFrameX", &x.to_string());
+            set_config_value(app, "windowFrameY", &y.to_string());
+        }
+        if let Ok(size) = window.outer_size() {
+            let w = size.width as f64 / scale;
+            let h = size.height as f64 / scale;
+            set_config_value(app, "windowFrameWidth", &w.to_string());
+            set_config_value(app, "windowFrameHeight", &h.to_string());
+        }
+    }
+}
+
+/// Force-save the window frame (bypasses debounce, for use on close).
+pub fn save_window_frame_now(app: &AppHandle) {
+    if let Ok(mut last) = LAST_FRAME_SAVE.lock() {
+        *last = None;
+    }
+    save_window_frame(app);
 }
 
 /// Create and show the main (mail) window
@@ -159,7 +199,8 @@ pub fn open_settings(app: AppHandle) -> Result<(), String> {
         WebviewUrl::App("view/setting.html".into()),
     )
     .title("Settings")
-    .inner_size(600.0, 800.0)
+    .inner_size(960.0, 740.0)
+    .min_inner_size(800.0, 500.0)
     .visible(true)
     .build()
     .map_err(|e| e.to_string())?;

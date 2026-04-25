@@ -98,10 +98,20 @@ pub fn run() {
             match event {
                 tauri::WindowEvent::CloseRequested { api, .. } => {
                     let label = window.label();
-                    if label == "main" || label == "settings" {
+                    if label == "main" {
+                        // Save window frame before hiding (bypass debounce)
+                        windows::save_window_frame_now(window.app_handle());
                         // Close-to-tray: hide instead of closing
                         api.prevent_close();
                         let _ = window.hide();
+                    } else if label == "settings" {
+                        api.prevent_close();
+                        let _ = window.hide();
+                    }
+                }
+                tauri::WindowEvent::Resized(_) | tauri::WindowEvent::Moved(_) => {
+                    if window.label() == "main" {
+                        windows::save_window_frame(window.app_handle());
                     }
                 }
                 _ => {}
@@ -110,11 +120,17 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|app, event| {
-            if let tauri::RunEvent::Reopen { .. } = event {
-                if let Some(window) = app.get_webview_window("main") {
-                    let _ = window.show();
-                    let _ = window.set_focus();
+            match event {
+                tauri::RunEvent::Reopen { .. } => {
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.show();
+                        let _ = window.set_focus();
+                    }
                 }
+                tauri::RunEvent::ExitRequested { .. } => {
+                    windows::save_window_frame_now(app);
+                }
+                _ => {}
             }
         });
 }
