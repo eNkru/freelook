@@ -1,81 +1,142 @@
-<img src="build/icons/128x128.png" alt="logo" height="80" align="right" />
+<img src="src-tauri/icons/128x128.png" alt="Freelook logo" height="80" align="right" />
 
 # Freelook
 [![Build](https://github.com/eNkru/freelook/actions/workflows/node.js.yml/badge.svg)](https://github.com/eNkru/freelook/actions/workflows/node.js.yml)
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
 
-Freelook, an alternative Electron-based desktop app to help you manage Outlook and Office 365.
+Freelook is a desktop wrapper for Outlook and Microsoft 365 Mail, built with [Tauri 2](https://tauri.app/). It keeps the app lightweight while still supporting tray behavior, unread indicators, notifications, and persistent window settings.
 
-```
-Please let me know if you can help me to design an icon for this app.
+## Declaration
+***This app helps some people like me who couldn't (or don't wish to) install a POP or SMTP mail client to manage their outlook & hotmail emails. Please raise any concern to me if any of the code or resource violate your copyright or trademark.***
 
-(The icon is currently shown on the right top conor of this README)
-
-Many Thanks.
-```
-
-## Declamation
-***This app helps some people like me who couldn't (or don't wish to) install an POP or SMPT mail client to manage their outlook & hotmail emails. Please raise any concern to me if any of the code or resource voilate your copyright or trademark.***
-
-## Feature
-* Receive your hotmail / outlook / office 365 online from the desktop app
-* Close to minimise
-* Dock tray support
-* System notification
+## Features
+* Access Outlook, Hotmail, and Microsoft 365 mail in a dedicated desktop app
+* Close to tray instead of quitting the app
+* Tray and dock unread indicators
+* Native system notifications for unread mail
 * Network connection detection
-* Customized setting
-    * Ads block as your control
-    * Switch between outlook and office 365
+* Persistent app settings
+* Optional ad blocking controls
+* Switch between Outlook and Microsoft 365
+* Zoom level adjustment
+* Window position and size persistence
+
+## Prerequisites
+
+### All Platforms
+* [Node.js](https://nodejs.org/) >= 24
+* [Rust](https://www.rust-lang.org/tools/install) toolchain (rustup, cargo)
+
+### macOS
+* Xcode Command Line Tools: `xcode-select --install`
+
+### Linux (Ubuntu/Debian)
+```bash
+sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+```
+
+### Windows
+* [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (usually pre-installed on Windows 10/11)
+* Visual Studio Build Tools
 
 ## Download
-The released application can be downloaded [here](https://github.com/eNkru/electron-outlook/releases).
+The released application can be downloaded [here](https://github.com/eNkru/freelook/releases).
 
-## Troubleshot
-`Some Linux distributions has the issue to display the reciptons in the To and CC fields.`
+## Getting Started
 
-The workaround is set some invalid values in the Ads Blocker settings. The settings come with the default value, you need to input some random numbers to overwrite them.
+### 1. Clone and install dependencies
 
-`Desktop Integration not updated/created when using AppImage`
-
-Since electron-builder 21 desktop integration is not a part of produced AppImage file anymore. Electron builder recommends [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) to install AppImages and create Desktop Integration or to create the desktop files manually.
-
-If you failed to run `npm install` with following errors
-
->npm ERR! ../src/keyboard-layout-manager.h:7:10: fatal error: X11/Xlib.h: No such file or directory
-
->npm ERR! ../src/keyboard-layout-manager-linux.cc:5:10: fatal error: X11/extensions/XKBrules.h: No such file or directory
-
-That means your environment is missing some dev libs for compiling. Install those dev libs will fix the issue.
-
-`sudo apt install libx11-dev libxkbfile-dev` <- For example, if you are on Ubuntu.
-
-## Build Pre-Request
-* [GIT](https://git-scm.com/)
-* [NPM](https://www.npmjs.com/)
-
-## Build & Install
-Clone the repository and run in development mode.
-```
+```bash
 git clone https://github.com/eNkru/freelook.git
 cd freelook
-npm i
-npm run start
+npm install
 ```
-Build the application 
-```
-npm run dist:linux
-```
-This will build a predefined AppImage & deb packages in the dist folder. AppImage can be run in most popular linux distributions with the support. Deb is only for debian & ubuntu distributions.
 
-## Release
+### 2. Run in development mode
+
+```bash
+npm run dev
 ```
-npm version (new release version)
-git push origin master
-git push origin --tags
-npm publish
+
+This starts the Tauri development app. Frontend changes in `src/` are reloaded automatically, and Rust changes in `src-tauri/` trigger a rebuild.
+
+### 3. Build for production
+
+```bash
+npm run build
 ```
+
+This builds the production app and generates platform-specific bundles:
+
+| Platform | Output |
+|----------|--------|
+| macOS    | `.dmg` |
+| Linux    | `.AppImage`, `.deb`, `.rpm` |
+| Windows  | `.msi` |
+
+Build artifacts are written to `src-tauri/target/release/bundle/`.
+
+### Available npm scripts
+
+| Script | Command | Description |
+|--------|---------|-------------|
+| `npm run dev` | `tauri dev` | Launch app in development mode with hot-reload |
+| `npm run build` | `tauri build` | Build production installers for your platform |
+| `npm run build:ts` | `tsc` | Compile TypeScript files in `src/ts/` only |
+| `npm run tauri` | `tauri` | Direct access to the Tauri CLI |
+
+## Project Structure
+
+```
+freelook/
+├── src/                    # Frontend source files
+│   ├── ts/                 # TypeScript source
+│   │   ├── splash.ts       # Splash screen logic
+│   │   ├── login.ts        # Login form logic
+│   │   ├── setting.ts      # Settings page logic
+│   │   ├── css-injector.ts # CSS injection for ad blocking
+│   │   └── tauri.d.ts      # Tauri type declarations
+│   ├── view/               # HTML views
+│   │   ├── splash.html
+│   │   ├── login.html
+│   │   └── setting.html
+│   └── css/                # Stylesheets
+│       ├── splash.css
+│       └── setting.css
+├── src-tauri/              # Rust backend (Tauri)
+│   ├── src/
+│   │   ├── main.rs         # Entry point
+│   │   ├── lib.rs          # App builder & plugin registration
+│   │   ├── commands.rs     # Tauri commands exposed to frontend
+│   │   ├── config.rs       # Persistent configuration store
+│   │   ├── tray.rs         # System tray management
+│   │   ├── menu.rs         # Native menu (macOS)
+│   │   ├── windows.rs      # Multi-window management
+│   │   └── network.rs      # Network connectivity detection
+│   ├── Cargo.toml          # Rust dependencies
+│   ├── tauri.conf.json     # Tauri configuration
+│   └── capabilities/       # Permission definitions
+├── assets/                 # Tray and unread-state assets
+├── src-tauri/icons/        # Tauri app icons used for bundling
+├── package.json
+└── tsconfig.json
+```
+
+## Packaging Notes
+
+Freelook now uses the Tauri icon set in `src-tauri/icons/`. Release bundles are generated by `tauri build`, not by the old Electron packaging flow.
+
+## Troubleshooting
+
+**Some Linux distributions have issues displaying recipients in the To and CC fields.**
+
+The workaround is to set some invalid values in the Ads Blocker settings. The settings come with default values; you need to input some random numbers to overwrite them.
+
+**AppImage desktop integration not updated/created.**
+
+Use [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) to install AppImages and create Desktop Integration, or create the desktop files manually.
 
 ## License
-This app helps some people like me who couldn't (or don't wish to) install an POP or SMPT mail client to manage their outlook & hotmail emails. Please raise any concern to me if any of the code or resource voilate your copyright or trademark.
+This app helps some people like me who couldn't (or don't wish to) install a POP or SMTP mail client to manage their outlook & hotmail emails. Please raise any concern to me if any of the code or resource violate your copyright or trademark.
 
-[MIT](https://github.com/eNkru/electron-xiami/blob/master/LICENSE) @ [Howard Ju](https://enkru.github.io/)
+[MIT](https://github.com/eNkru/freelook/blob/master/LICENSE) @ [Howard Ju](https://enkru.github.io/)
