@@ -1,7 +1,7 @@
 {
   "name": "freelook",
   "productName": "Freelook",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Outlook desktop application powered by Tauri",
   "author": "Howard Ju <howard.ju@outlook.com>",
   "repository": "https://github.com/eNkru/freelook",

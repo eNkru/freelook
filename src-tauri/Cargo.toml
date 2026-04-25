@@ -1,6 +1,6 @@
 [package]
 name = "freelook"
-version = "1.0.1"
+version = "2.0.0"
 description = "Outlook desktop application"
 authors = ["Howard Ju <howard.ju@outlook.com>"]
 license = "MIT"
