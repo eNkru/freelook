@@ -18,7 +18,15 @@
     "build": "tauri build",
     "build:ts": "tsc",
     "clean": "rm -rf src-tauri/target src-tauri/gen node_modules src/js-compiled dist build out release debug coverage tmp temp .cache .turbo .parcel-cache .next .nuxt .svelte-kit && find . -name .DS_Store -delete 2>/dev/null || true",
-    "clean:full": "npm run clean && npm install && npm run build:ts"
+    "clean:full": "npm run clean && npm install && npm run build:ts",
+    "release": "npm run release:check && npm run release:tag && npm run release:push",
+    "release:patch": "npm version patch --no-git-tag-version && npm run release:sync && npm run release",
+    "release:minor": "npm version minor --no-git-tag-version && npm run release:sync && npm run release",
+    "release:major": "npm version major --no-git-tag-version && npm run release:sync && npm run release",
+    "release:sync": "node -e \"const p=require('./package.json');const c=require('./src-tauri/tauri.conf.json');c.version=p.version;require('fs').writeFileSync('./src-tauri/tauri.conf.json',JSON.stringify(c,null,2)+'\\n');console.log('Synced version '+p.version+' to tauri.conf.json')\"",
+    "release:check": "node -e \"const p=require('./package.json');const c=require('./src-tauri/tauri.conf.json');if(p.version!==c.version){console.error('Version mismatch: package.json='+p.version+' tauri.conf.json='+c.version);process.exit(1)}console.log('Versions in sync: '+p.version)\"",
+    "release:tag": "git add package.json package-lock.json src-tauri/tauri.conf.json && git commit -m \"release: v$(node -p \\\"require('./package.json').version\\\")\" && git tag \"v$(node -p \\\"require('./package.json').version\\\")\"",
+    "release:push": "git push && git push --tags"
   },
   "engines": {
     "node": ">=24"

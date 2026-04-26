@@ -84,6 +84,63 @@ Build artifacts are written to `src-tauri/target/release/bundle/`.
 | `npm run build` | `tauri build` | Build production installers for your platform |
 | `npm run build:ts` | `tsc` | Compile TypeScript files in `src/ts/` only |
 | `npm run tauri` | `tauri` | Direct access to the Tauri CLI |
+| `npm run release:patch` | — | Bump patch version, tag, and push to trigger a release |
+| `npm run release:minor` | — | Bump minor version, tag, and push to trigger a release |
+| `npm run release:major` | — | Bump major version, tag, and push to trigger a release |
+| `npm run release` | — | Tag and push the current version without bumping |
+| `npm run release:check` | — | Verify `package.json` and `tauri.conf.json` versions match |
+| `npm run release:sync` | — | Copy version from `package.json` into `tauri.conf.json` |
+
+## Releasing
+
+Releases are automated via GitHub Actions. Pushing a `v*` tag triggers the [release workflow](.github/workflows/release.yml), which builds the app for macOS (ARM64 & x86_64), Linux (x86_64), and Windows (x86_64), then publishes the artifacts to a GitHub Release.
+
+### Quick release
+
+```bash
+# Patch release (e.g. 2.0.0 → 2.0.1)
+npm run release:patch
+
+# Minor release (e.g. 2.0.0 → 2.1.0)
+npm run release:minor
+
+# Major release (e.g. 2.0.0 → 3.0.0)
+npm run release:major
+```
+
+Each command will:
+1. Bump the version in [`package.json`](package.json)
+2. Sync the version to [`src-tauri/tauri.conf.json`](src-tauri/tauri.conf.json)
+3. Commit the changes with a `release: vX.Y.Z` message
+4. Create a `vX.Y.Z` git tag
+5. Push the commit and tag to GitHub
+
+Once the tag is pushed, the GitHub Actions workflow takes over and builds platform-specific installers. The release starts as a **draft** and is automatically published once all builds complete successfully.
+
+### Manual release
+
+If you want to release the current version without bumping:
+
+```bash
+npm run release
+```
+
+This verifies the versions are in sync, creates the tag, and pushes it.
+
+### macOS code signing
+
+To enable macOS code signing and notarization, configure these repository secrets:
+
+| Secret | Description |
+|--------|-------------|
+| `APPLE_CERTIFICATE` | Base64-encoded `.p12` certificate |
+| `APPLE_CERTIFICATE_PASSWORD` | Password for the `.p12` certificate |
+| `APPLE_SIGNING_IDENTITY` | Signing identity (e.g. `Developer ID Application: ...`) |
+| `APPLE_ID` | Apple ID email used for notarization |
+| `APPLE_PASSWORD` | App-specific password for the Apple ID |
+| `APPLE_TEAM_ID` | Apple Developer Team ID |
+
+Without these secrets, macOS builds will still succeed but the app will not be signed or notarized.
 
 ## Project Structure
 
