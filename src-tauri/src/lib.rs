@@ -60,6 +60,7 @@ pub fn run() {
             commands::restart_app,
             commands::css_inject,
             commands::submit_login,
+            commands::open_external_url,
         ])
         .setup(|app| {
             // Create tray icon
