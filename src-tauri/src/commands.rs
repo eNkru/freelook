@@ -107,6 +107,12 @@ pub fn css_inject(app: AppHandle, webview_label: String, css: String) -> Result<
     windows::css_inject(app, webview_label, css)
 }
 
+// External link command
+#[tauri::command]
+pub fn open_external_url(url: String) -> Result<(), String> {
+    tauri_plugin_opener::open_url(&url, None::<&str>).map_err(|e| e.to_string())
+}
+
 // Login command
 #[tauri::command]
 pub fn submit_login(credentials: serde_json::Value) -> Result<serde_json::Value, String> {
