@@ -317,6 +317,14 @@ pub fn restart_app(app: AppHandle) -> Result<(), String> {
     app.restart();
 }
 
+/// Refresh (reload) the main webview page
+pub fn refresh_page(app: AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        window.eval("location.reload()").map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 /// Inject CSS into a webview
 pub fn css_inject(app: AppHandle, webview_label: String, css: String) -> Result<(), String> {
     if let Some(window) = app.get_webview_window(&webview_label) {

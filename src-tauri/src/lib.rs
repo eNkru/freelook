@@ -58,6 +58,7 @@ pub fn run() {
             commands::reset_window_frame,
             commands::open_settings,
             commands::restart_app,
+            commands::refresh_page,
             commands::css_inject,
             commands::submit_login,
             commands::open_external_url,
@@ -70,6 +71,17 @@ pub fn run() {
             // Set up native menu
             let menu = menu::create_menu(&app_handle).expect("Failed to create menu");
             app.set_menu(menu).expect("Failed to set menu");
+
+            // Handle native menu events
+            let app_handle_menu = app.handle().clone();
+            app.on_menu_event(move |_app, event| {
+                match event.id().as_ref() {
+                    "refresh" => {
+                        let _ = windows::refresh_page(app_handle_menu.clone());
+                    }
+                    _ => {}
+                }
+            });
 
             // Start loading Outlook immediately. Network probing only controls the splash fallback.
             let app_handle2 = app.handle().clone();
