@@ -64,6 +64,7 @@ pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
 
     // Build context menu
     let open_item = MenuItem::with_id(app, "open", "Open", true, None::<&str>)?;
+    let refresh_item = MenuItem::with_id(app, "refresh", "Refresh", true, None::<&str>)?;
     let settings_item = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
     let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
@@ -72,6 +73,7 @@ pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
         app,
         &[
             &open_item,
+            &refresh_item,
             &separator,
             &settings_item,
             &separator,
@@ -93,6 +95,9 @@ pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
                     let _ = window.show();
                     let _ = window.set_focus();
                 }
+            }
+            "refresh" => {
+                let _ = windows::refresh_page(app.clone());
             }
             "settings" => {
                 let _ = windows::open_settings(app.clone());

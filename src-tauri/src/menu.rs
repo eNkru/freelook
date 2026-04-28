@@ -1,5 +1,5 @@
 use tauri::{
-    menu::{Menu, MenuBuilder, PredefinedMenuItem, SubmenuBuilder},
+    menu::{Menu, MenuBuilder, MenuItem, PredefinedMenuItem, SubmenuBuilder},
     AppHandle,
 };
 
@@ -18,6 +18,12 @@ pub fn create_menu(app: &AppHandle) -> Result<Menu<tauri::Wry>, Box<dyn std::err
         .item(&PredefinedMenuItem::select_all(app, None)?)
         .build()?;
 
+    // View menu with Refresh
+    let refresh_item = MenuItem::with_id(app, "refresh", "Refresh", true, Some("CmdOrCtrl+R"))?;
+    let view_menu = SubmenuBuilder::new(app, "View")
+        .item(&refresh_item)
+        .build()?;
+
     if is_macos {
         // macOS Application menu
         let app_menu = SubmenuBuilder::new(app, "Application")
@@ -29,6 +35,7 @@ pub fn create_menu(app: &AppHandle) -> Result<Menu<tauri::Wry>, Box<dyn std::err
         let menu = MenuBuilder::new(app)
             .item(&app_menu)
             .item(&edit_menu)
+            .item(&view_menu)
             .build()?;
 
         Ok(menu)
@@ -36,6 +43,7 @@ pub fn create_menu(app: &AppHandle) -> Result<Menu<tauri::Wry>, Box<dyn std::err
         // Non-macOS: Edit menu ensures Ctrl+C/V/X work
         let menu = MenuBuilder::new(app)
             .item(&edit_menu)
+            .item(&view_menu)
             .build()?;
 
         Ok(menu)

@@ -103,6 +103,11 @@ pub fn restart_app(app: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
+pub fn refresh_page(app: AppHandle) -> Result<(), String> {
+    windows::refresh_page(app)
+}
+
+#[tauri::command]
 pub fn css_inject(app: AppHandle, webview_label: String, css: String) -> Result<(), String> {
     windows::css_inject(app, webview_label, css)
 }
