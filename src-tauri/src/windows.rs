@@ -196,6 +196,7 @@ pub fn create_main_window(app: &AppHandle) -> Result<(), String> {
     .inner_size(width, height)
     .position(x, y)
     .visible(false)
+    .disable_drag_drop_handler()
     .on_navigation(move |url| {
         if is_microsoft_url(url) {
             true
