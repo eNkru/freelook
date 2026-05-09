@@ -241,6 +241,9 @@ pub fn apply_main_settings(app: &AppHandle) -> Result<(), String> {
 
         // Inject link click interceptor
         let _ = window.eval(get_link_interceptor_js());
+
+        // Inject floating refresh button
+        let _ = window.eval(get_refresh_button_js());
     }
     Ok(())
 }
@@ -369,6 +372,37 @@ pub fn get_main_css(app: &AppHandle) -> String {
         .{premium} {{ display: none !important; }}
         "#
     )
+}
+
+/// Get the JavaScript that injects a floating refresh button
+fn get_refresh_button_js() -> &'static str {
+    r#"
+    (function() {
+        if (document.getElementById('freelook-refresh-btn')) return;
+
+        const btn = document.createElement('div');
+        btn.id = 'freelook-refresh-btn';
+        btn.title = 'Refresh page';
+        btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>';
+        btn.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:2147483647;width:44px;height:44px;border-radius:50%;background:rgba(0,120,212,0.85);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);transition:background 0.2s,transform 0.15s;backdrop-filter:blur(4px);';
+
+        btn.addEventListener('mouseenter', function() {
+            btn.style.background = 'rgba(0,120,212,1)';
+            btn.style.transform = 'scale(1.1)';
+        });
+        btn.addEventListener('mouseleave', function() {
+            btn.style.background = 'rgba(0,120,212,0.85)';
+            btn.style.transform = 'scale(1)';
+        });
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            location.reload();
+        });
+
+        document.body.appendChild(btn);
+    })();
+    "#
 }
 
 /// Get the no-frame CSS
