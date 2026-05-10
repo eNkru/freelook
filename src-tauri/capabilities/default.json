@@ -19,6 +19,8 @@
     "store:default",
     "notification:default",
     "opener:default",
-    "opener:allow-open-url"
+    "opener:allow-open-url",
+    "dialog:allow-save",
+    "dialog:allow-ask"
   ]
 }

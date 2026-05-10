@@ -22,9 +22,10 @@ fn is_microsoft_url(url: &url::Url) -> bool {
                 || h == "outlook.office.com"
                 || h == "login.microsoftonline.com"
                 || h == "login.live.com"
+                || h == "outlook.live.net"
                 || h == "www.office.com"
-                || h.ends_with(".outlook.com")
                 || h.ends_with(".outlook.live.com")
+                || h.ends_with(".outlook.live.net")
                 || h.ends_with(".office365.com")
                 || h.ends_with(".office.com")
                 || h.ends_with(".microsoft.com")
@@ -244,6 +245,9 @@ pub fn apply_main_settings(app: &AppHandle) -> Result<(), String> {
 
         // Inject floating refresh button
         let _ = window.eval(get_refresh_button_js());
+
+        // Inject attachment download interceptor
+        let _ = window.eval(get_attachment_interceptor_js());
     }
     Ok(())
 }
@@ -419,6 +423,79 @@ pub fn get_no_frame_css() -> String {
     }
     "#
     .to_string()
+}
+
+/// JavaScript that intercepts attachment downloads and routes them through Rust
+fn get_attachment_interceptor_js() -> &'static str {
+    r#"
+    (function() {
+        if (window.__freelook_attachment_interceptor__) return;
+        window.__freelook_attachment_interceptor__ = true;
+
+        function isDownloadLink(el) {
+            if (el.hasAttribute('download')) return true;
+            var href = el.getAttribute('href');
+            if (!href || href === '#' || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('/')) return false;
+            try {
+                var u = new URL(href, location.origin);
+                var h = u.hostname.toLowerCase();
+                if (h.includes('attachment.outlook') || h.includes('attachment.office')) return true;
+                var p = u.pathname.toLowerCase();
+                if (p.includes('/attachment') || p.includes('/download')) return true;
+            } catch(e) {}
+            return false;
+        }
+
+        function getFilenameFromUrl(url) {
+            try {
+                var u = new URL(url, location.origin);
+                var parts = u.pathname.split('/');
+                var last = parts[parts.length - 1];
+                if (last) return decodeURIComponent(last);
+            } catch(e) {}
+            return 'download';
+        }
+
+        async function handleDownload(url, suggestedName) {
+            try {
+                var response = await fetch(url, { credentials: 'include' });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+
+                var disp = response.headers.get('Content-Disposition');
+                var filename = null;
+                if (disp) {
+                    var match = disp.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                    if (match && match[1]) filename = match[1].replace(/['"]/g, '');
+                }
+                filename = filename || suggestedName || getFilenameFromUrl(url);
+
+                var blob = await response.blob();
+                var buf = await blob.arrayBuffer();
+                var data = new Uint8Array(buf);
+
+                await window.__TAURI__.core.invoke('save_downloaded_file', {
+                    data: data,
+                    suggestedName: filename
+                });
+            } catch(e) {
+                console.error('Freelook download error:', e);
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            var el = e.target;
+            while (el && el.tagName !== 'A') el = el.parentElement;
+            if (!el) return;
+
+            if (isDownloadLink(el)) {
+                e.preventDefault();
+                e.stopPropagation();
+                var href = el.getAttribute('href');
+                handleDownload(href, el.getAttribute('download') || getFilenameFromUrl(href));
+            }
+        }, true);
+    })();
+    "#
 }
 
 /// JavaScript that intercepts non-Microsoft link clicks and opens them externally
