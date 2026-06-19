@@ -115,40 +115,18 @@ pub fn css_inject(app: AppHandle, webview_label: String, css: String) -> Result<
 // External link command
 #[tauri::command]
 pub fn open_external_url(url: String) -> Result<(), String> {
+    eprintln!("[freelook] opening external url: {}", url);
     tauri_plugin_opener::open_url(&url, None::<&str>).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn set_pending_download_name(name: String) -> Result<(), String> {
+    windows::set_pending_download_name(name);
+    Ok(())
 }
 
 // Login command
 #[tauri::command]
 pub fn submit_login(credentials: serde_json::Value) -> Result<serde_json::Value, String> {
     Ok(credentials)
-}
-
-/// Save a downloaded file to disk via save dialog
-#[tauri::command]
-pub async fn save_downloaded_file(app: AppHandle, data: Vec<u8>, suggested_name: String) -> Result<Option<String>, String> {
-    use tauri_plugin_dialog::DialogExt;
-
-    let app_handle = app.clone();
-
-    let result = tokio::task::spawn_blocking(move || {
-        let path = app_handle
-            .dialog()
-            .file()
-            .set_file_name(&suggested_name)
-            .blocking_save_file();
-
-        match path {
-            Some(path) => {
-                let path_buf = path.as_path().ok_or("Invalid path")?.to_path_buf();
-                std::fs::write(&path_buf, &data).map_err(|e| format!("Failed to write file: {}", e))?;
-                Ok(Some(path_buf.to_string_lossy().to_string()))
-            }
-            None => Ok(None), // User cancelled
-        }
-    })
-    .await
-    .map_err(|e| format!("Task join error: {}", e))?;
-
-    result
 }
