@@ -38,7 +38,6 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_notification::init())
-        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(window) = app.get_webview_window("main") {
@@ -63,7 +62,7 @@ pub fn run() {
             commands::css_inject,
             commands::submit_login,
             commands::open_external_url,
-            commands::save_downloaded_file,
+            commands::set_pending_download_name,
         ])
         .setup(|app| {
             // Create tray icon
@@ -76,13 +75,11 @@ pub fn run() {
 
             // Handle native menu events
             let app_handle_menu = app.handle().clone();
-            app.on_menu_event(move |_app, event| {
-                match event.id().as_ref() {
-                    "refresh" => {
-                        let _ = windows::refresh_page(app_handle_menu.clone());
-                    }
-                    _ => {}
+            app.on_menu_event(move |_app, event| match event.id().as_ref() {
+                "refresh" => {
+                    let _ = windows::refresh_page(app_handle_menu.clone());
                 }
+                _ => {}
             });
 
             // Start loading Outlook immediately. Network probing only controls the splash fallback.
@@ -134,19 +131,17 @@ pub fn run() {
         })
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
-        .run(|app, event| {
-            match event {
-                #[cfg(target_os = "macos")]
-                tauri::RunEvent::Reopen { .. } => {
-                    if let Some(window) = app.get_webview_window("main") {
-                        let _ = window.show();
-                        let _ = window.set_focus();
-                    }
+        .run(|app, event| match event {
+            #[cfg(target_os = "macos")]
+            tauri::RunEvent::Reopen { .. } => {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.set_focus();
                 }
-                tauri::RunEvent::ExitRequested { .. } => {
-                    windows::save_window_frame_now(app);
-                }
-                _ => {}
             }
+            tauri::RunEvent::ExitRequested { .. } => {
+                windows::save_window_frame_now(app);
+            }
+            _ => {}
         });
 }
