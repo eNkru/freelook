@@ -5,6 +5,7 @@ use tauri::{
     webview::{DownloadEvent, PageLoadEvent},
     AppHandle, Manager, WebviewUrl, WebviewWindowBuilder,
 };
+use tauri_plugin_notification::NotificationExt;
 
 #[allow(dead_code)]
 const DEEPLINK_URLS: &[&str] = &[
@@ -67,20 +68,21 @@ fn is_microsoft_url(url: &url::Url) -> bool {
     }
 }
 
-fn is_attachment_or_preview_url(url: &url::Url) -> bool {
-    if !is_microsoft_url(url) {
-        return false;
-    }
-
-    let value = url.as_str().to_lowercase();
-    value.contains("attachment")
-        || value.contains("download")
-        || value.contains("pdf")
-        || value.contains("mspdfkit")
-        || value.contains("fluidpreview")
-        || value.contains("officepreview")
-        || value.contains("wopi")
-        || value.contains("owa/service.svc")
+/// Check whether a saved file path's extension is a PDF / Office document that
+/// we want to auto-open with the OS default viewer (Preview, Word, Excel, ...)
+/// after a successful download. We only treat the inline preview as "working"
+/// when the file actually lands on disk and is launched in a real viewer, since
+/// WKWebView cannot render Outlook's Office Online / PDFTron preview iframe.
+fn path_is_pdf_or_doc(path: &Path) -> bool {
+    matches!(
+        path.extension()
+            .and_then(|ext| ext.to_str())
+            .map(|value| value.to_ascii_lowercase())
+            .as_deref(),
+        Some(
+            "pdf" | "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "rtf" | "odt" | "ods" | "odp"
+        )
+    )
 }
 
 /// Check if a URL is an ad/tracking URL that should be silently blocked
@@ -334,29 +336,84 @@ pub fn create_main_window(app: &AppHandle) -> Result<(), String> {
         match event {
             DownloadEvent::Requested { url, destination } => {
                 eprintln!("[freelook] download requested: {}", url);
+                // Save directly to the user's ~/Downloads directory with a
+                // sensible suggested filename. We previously tried a native
+                // save dialog here, but any modal panel (NSSavePanel via
+                // `tauri-plugin-dialog`'s `blocking_save_file`, or even the
+                // underlying rfd `beginSheet` modal) freezes the WKWebView
+                // because the dialog's nested event pump conflicts with
+                // Tauri's main-thread event loop. So accept always and let
+                // `download_name()` pick the file name from (1) any pending
+                // name the JS-side link interceptor cached via
+                // `set_pending_download_name`, (2) the existing destination
+                // filename, or (3) the URL's last path segment.
                 if let Ok(download_dir) = webview.app_handle().path().download_dir() {
                     let suggested_name = download_name(&url, destination);
-                    let suggested_name = suggested_name.to_string_lossy();
-                    *destination = unique_download_path(&download_dir, suggested_name.as_ref());
+                    let suggested_str = suggested_name.to_string_lossy();
+                    *destination = unique_download_path(&download_dir, suggested_str.as_ref());
                     eprintln!("[freelook] download destination: {:?}", destination);
                 }
+                true
             }
             DownloadEvent::Finished { url, path, success } => {
                 eprintln!(
                     "[freelook] download finished: {} path={:?} success={}",
                     url, path, success
                 );
+                if success {
+                    // Auto-open PDF / Office documents with the OS default viewer
+                    // so users get a working preview despite WKWebView showing
+                    // "Something went wrong" inside Outlook's inline preview
+                    // pane. The browser cookie store in the user's external
+                    // default browser does not share auth with our WebView, so
+                    // externalising the URL to Safari / Chrome fails auth and
+                    // redirects to Microsoft login; opening the downloaded
+                    // local file works because Preview.app / Word / Excel read
+                    // it directly.
+                    if let Some(saved) = path.as_ref() {
+                        if path_is_pdf_or_doc(saved) {
+                            let _ = tauri_plugin_opener::open_path(
+                                saved.as_path(),
+                                None::<&str>,
+                            );
+                        }
+                    }
+
+                    let name = path
+                        .as_ref()
+                        .and_then(|p| p.file_name())
+                        .and_then(|f| f.to_str())
+                        .map(str::to_string)
+                        .unwrap_or_else(|| "download".to_string());
+                    let folder = path
+                        .as_ref()
+                        .and_then(|p| p.parent())
+                        .and_then(|parent| parent.file_name())
+                        .and_then(|f| f.to_str())
+                        .map(str::to_string)
+                        .unwrap_or_else(|| "Downloads".to_string());
+                    let _ = webview
+                        .app_handle()
+                        .notification()
+                        .builder()
+                        .title("Freelook: download complete")
+                        .body(format!("Saved to {folder}/{name}"))
+                        .show();
+                }
+                true
             }
-            _ => {}
+            _ => true,
         }
-        true
     })
     .on_navigation(move |url| {
-        if is_attachment_or_preview_url(url) {
-            eprintln!("[freelook] opening attachment externally: {}", url);
-            let _ = tauri_plugin_opener::open_url(url.as_str(), None::<&str>);
-            false
-        } else if is_microsoft_url(url) {
+        if is_microsoft_url(url) {
+            // Let Microsoft URLs navigate inside the embedded Outlook view so
+            // inline previews (images, HTML, etc.) render and the Download
+            // buttons reach on_download. WKWebView cannot render Outlook's
+            // Office Online / PDFTron preview iframe ("Something went wrong")
+            // but Microsoft's own preview UI shows a Download button as
+            // fallback, and on_download auto-opens the saved PDF / Office doc
+            // in Preview.app / Word / Excel.
             true
         } else if is_ad_url(url) {
             // Silently block ad/tracking navigations
@@ -367,14 +424,7 @@ pub fn create_main_window(app: &AppHandle) -> Result<(), String> {
         }
     })
     .on_new_window(|url, _features| {
-        if is_attachment_or_preview_url(&url) {
-            eprintln!(
-                "[freelook] opening attachment new-window externally: {}",
-                url
-            );
-            let _ = tauri_plugin_opener::open_url(url.as_str(), None::<&str>);
-            tauri::webview::NewWindowResponse::Deny
-        } else if is_microsoft_url(&url) {
+        if is_microsoft_url(&url) {
             tauri::webview::NewWindowResponse::Allow
         } else if is_ad_url(&url) {
             // Silently deny ad/tracking popups
@@ -588,13 +638,15 @@ pub fn get_no_frame_css() -> String {
     .to_string()
 }
 
-/// JavaScript that intercepts non-Microsoft link clicks and opens them externally
+/// JavaScript that intercepts non-Microsoft link clicks and opens them externally,
+/// and remembers a suggested filename for the next download so the save dialog has a
+/// sensible default name.
 fn get_link_interceptor_js() -> &'static str {
     r#"
     (function() {
         if (window.__freelook_link_interceptor__) return;
         window.__freelook_link_interceptor__ = true;
-        
+
         function isMsUrl(href) {
             if (!href || href === '#' || href.startsWith('javascript:')) return true;
             if (href.startsWith('/')) return true;
@@ -627,49 +679,6 @@ fn get_link_interceptor_js() -> &'static str {
                     || h.endsWith('.onenote.com') || h.endsWith('.onedrive.com')
                     || h.endsWith('.svc.ms');
             } catch(e) { return true; }
-        }
-
-        function isAttachmentOrPreviewUrl(href) {
-            if (!href || href === '#' || href.startsWith('javascript:')) return false;
-            try {
-                var u = new URL(href, location.href);
-                if (u.protocol === 'blob:') {
-                    try {
-                        u = new URL(u.pathname);
-                    } catch(e) {
-                        return false;
-                    }
-                }
-                if (!isMsUrl(u.href)) return false;
-                var value = u.href.toLowerCase();
-                return value.includes('attachment')
-                    || value.includes('download')
-                    || value.includes('pdf')
-                    || value.includes('mspdfkit')
-                    || value.includes('fluidpreview')
-                    || value.includes('officepreview')
-                    || value.includes('wopi')
-                    || value.includes('owa/service.svc');
-            } catch(e) {
-                return false;
-            }
-        }
-
-        const openedPreviewUrls = new Set();
-
-        function externalizePreviewUrl(href) {
-            if (!isAttachmentOrPreviewUrl(href)) return;
-            var absoluteUrl = new URL(href, location.href).href;
-            if (absoluteUrl.startsWith('blob:')) return;
-            if (openedPreviewUrls.has(absoluteUrl)) return;
-            openedPreviewUrls.add(absoluteUrl);
-            window.__TAURI__.core.invoke('open_external_url', { url: absoluteUrl });
-        }
-
-        function scanPreviewFrames(root) {
-            (root || document).querySelectorAll('iframe[src], embed[src], object[data]').forEach(function(node) {
-                externalizePreviewUrl(node.getAttribute('src') || node.getAttribute('data'));
-            });
         }
 
         function filenameFromText(text) {
@@ -738,50 +747,29 @@ fn get_link_interceptor_js() -> &'static str {
             while (el && el.tagName !== 'A') el = el.parentElement;
             if (!el) return;
             var href = el.getAttribute('href');
-            if (isAttachmentOrPreviewUrl(href)) {
-                e.preventDefault();
-                e.stopPropagation();
-                externalizePreviewUrl(href);
-            } else if (!isMsUrl(href)) {
-                e.preventDefault();
-                e.stopPropagation();
-                window.__TAURI__.core.invoke('open_external_url', {
-                    url: new URL(href, location.href).href
-                });
-            }
+            if (!href || href === '#' || href.startsWith('javascript:')) return;
+            // Let Microsoft link clicks navigate naturally inside the embedded
+            // view so inline previews render and "Download" buttons reach
+            // on_download (which shows the save dialog and auto-opens PDF /
+            // Office documents with the OS default viewer).
+            if (isMsUrl(href)) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+            window.__TAURI__.core.invoke('open_external_url', {
+                url: new URL(href, location.href).href
+            });
         }
-        
+
         document.addEventListener('pointerdown', rememberDownloadName, true);
         document.addEventListener('mousedown', rememberDownloadName, true);
         document.addEventListener('click', rememberDownloadName, true);
         document.addEventListener('click', interceptClick, true);
-        scanPreviewFrames(document);
 
-        new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                mutation.addedNodes.forEach(function(node) {
-                    if (node.nodeType !== 1) return;
-                    if (node.matches && node.matches('iframe[src], embed[src], object[data]')) {
-                        externalizePreviewUrl(node.getAttribute('src') || node.getAttribute('data'));
-                    }
-                    if (node.querySelectorAll) scanPreviewFrames(node);
-                });
-                if (mutation.type === 'attributes') {
-                    externalizePreviewUrl(mutation.target.getAttribute('src') || mutation.target.getAttribute('data'));
-                }
-            });
-        }).observe(document.documentElement, {
-            childList: true,
-            subtree: true,
-            attributes: true,
-            attributeFilter: ['src', 'data']
-        });
-        
-        // Inject into same-origin iframes only (skip ads)
+        // Inject click handler into same-origin iframes too (skip ad/tracking iframes).
         function attachToMailIframes() {
             document.querySelectorAll('iframe').forEach(function(iframe) {
                 var src = iframe.src || '';
-                // Skip ad/tracking iframes
                 if (src.includes('adnxs') || src.includes('adsdk') || src.includes('doubleclick') || src.includes('ads.')) return;
                 try {
                     var doc = iframe.contentDocument;
@@ -792,7 +780,7 @@ fn get_link_interceptor_js() -> &'static str {
                 } catch(e) {} // Cross-origin, skip
             });
         }
-        
+
         window.addEventListener('load', function() {
             attachToMailIframes();
             setTimeout(attachToMailIframes, 1000);
