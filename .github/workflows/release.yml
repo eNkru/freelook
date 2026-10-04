@@ -37,7 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Node.js from .nvmrc
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -73,7 +73,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Node.js from .nvmrc
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -113,7 +113,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Use Node.js from .nvmrc
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
