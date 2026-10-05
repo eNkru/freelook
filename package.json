@@ -25,7 +25,7 @@
     "release:major": "npm version major --no-git-tag-version && npm run release:sync && npm run release",
     "release:sync": "node -e \"const p=require('./package.json');const c=require('./src-tauri/tauri.conf.json');c.version=p.version;require('fs').writeFileSync('./src-tauri/tauri.conf.json',JSON.stringify(c,null,2)+'\\n');console.log('Synced version '+p.version+' to tauri.conf.json')\"",
     "release:check": "node -e \"const p=require('./package.json');const c=require('./src-tauri/tauri.conf.json');if(p.version!==c.version){console.error('Version mismatch: package.json='+p.version+' tauri.conf.json='+c.version);process.exit(1)}console.log('Versions in sync: '+p.version)\"",
-    "release:tag": "git add package.json package-lock.json src-tauri/tauri.conf.json && git commit -m \"release: v$(node -p \\\"require('./package.json').version\\\")\" && git tag \"v$(node -p \\\"require('./package.json').version\\\")\"",
+    "release:tag": "git add package.json package-lock.json src-tauri/tauri.conf.json && git commit -m \"release: v$npm_package_version\" && git tag \"v$npm_package_version\"",
     "release:push": "git push && git push --tags"
   },
   "engines": {
