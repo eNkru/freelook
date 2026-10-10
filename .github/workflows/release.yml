@@ -93,6 +93,19 @@ jobs:
         run: npm ci
       - name: Build TypeScript
         run: npm run build:ts
+      # tauri-bundler caches its AppRun tool at ~/.cache/tauri/AppRun-<arch> and
+      # writes it with mode 0o770 (tauri#16155). linuxdeploy preserves the mode
+      # when renaming it to AppRun.wrapped, so non-root users (e.g. firejail,
+      # the AppImage catalog) cannot execute it. Pre-seed the cache with a 0755
+      # copy instead; the bundler skips its download when the file exists.
+      - name: Pre-seed Tauri tool cache with 0755 AppRun (tauri#16155 workaround)
+        run: |
+          arch="${{ matrix.target }}"
+          arch="${arch%%-*}"
+          mkdir -p "$HOME/.cache/tauri"
+          curl -fsSL -o "$HOME/.cache/tauri/AppRun-$arch" \
+            "https://github.com/tauri-apps/binary-releases/releases/download/apprun-old/AppRun-$arch"
+          chmod 755 "$HOME/.cache/tauri/AppRun-$arch"
       - uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
